@@ -1,0 +1,91 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="UTF-8">
+    <title>MoeCTF DevOps 报数大作战</title>
+    <style>
+        body { font-family: sans-serif; background: #f0f2f5; margin: 0; padding: 20px; display: flex; flex-direction: column; align-items: center; }
+        .container { width: 600px; background: white; border-radius: 8px; box-shadow: 0 4px 12px rgba(0,0,0,0.1); padding: 20px; }
+        h2 { margin-top: 0; color: #333; text-align: center; }
+        .status { background: #e3f2fd; padding: 10px; border-radius: 4px; font-weight: bold; margin-bottom: 15px; color: #0d47a1; text-align: center; }
+        .chat-box { height: 350px; border: 1px solid #ddd; border-radius: 4px; overflow-y: scroll; padding: 10px; margin-bottom: 15px; background: #fafafa; }
+        .msg { margin-bottom: 8px; font-size: 14px; }
+        .time { color: #999; margin-right: 5px; }
+        .user { font-weight: bold; color: #2b6cb0; margin-right: 5px; }
+        .input-area { display: flex; gap: 10px; }
+        input { padding: 10px; border: 1px solid #ddd; border-radius: 4px; font-size: 14px; }
+        #username { width: 80px; }
+        #msg { flex: 1; }
+        button { padding: 10px 20px; background: #3182ce; color: white; border: none; border-radius: 4px; cursor: pointer; font-weight: bold; }
+        button:hover { background: #2b6cb0; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h2>MoeCTF DevOps 报数大作战</h2>
+        <div class="status" id="status">当前报数进度: 0 / 500</div>
+        <div class="chat-box" id="chatBox"></div>
+        <div class="input-area">
+            <input type="text" id="username" value="挑战者" placeholder="昵称">
+            <input type="number" id="msg" placeholder="请输入下一个接龙数字..." onkeydown="if(event.keyCode==13)send()">
+            <button onclick="send()">发送</button>
+        </div>
+    </div>
+
+    <script>
+        const box = document.getElementById('chatBox');
+        const statusDiv = document.getElementById('status');
+
+        // 建立长连接 WebSocket
+        const protocol = window.location.protocol === 'https:' ? 'wss:' : 'ws:';
+        const ws = new WebSocket(`${protocol}//${window.location.host}/ws`);
+
+        ws.onmessage = function(event) {
+            const data = JSON.parse(event.data);
+            
+            if (data.type === 'status') {
+                statusDiv.innerText = '当前报数进度: ' + data.current + ' / 500';
+            } else if (data.type === 'chat') {
+                // 收到新消息或进度重置广播
+                statusDiv.innerText = '当前报数进度: ' + data.current + ' / 500';
+                
+                let isScrolledToBottom = box.scrollHeight - box.clientHeight <= box.scrollTop + 1;
+                
+                const msgDiv = document.createElement('div');
+                msgDiv.className = 'msg';
+                msgDiv.innerHTML = `
+                    <span class="time">[${data.time}]</span>
+                    <span class="user">${data.user}:</span>
+                    <span>${data.text}</span>
+                `;
+                box.appendChild(msgDiv);
+                
+                if (isScrolledToBottom) {
+                    box.scrollTop = box.scrollHeight;
+                }
+            }
+        };
+
+        ws.onclose = function() {
+            statusDiv.innerText = '🔴 与聊天室连接已断开，请刷新页面重试';
+            statusDiv.style.background = '#ffebee';
+            statusDiv.style.color = '#c62828';
+        };
+
+        async function send() {
+            let u = document.getElementById('username').value || "无名氏";
+            let mInput = document.getElementById('msg');
+            let m = parseInt(mInput.value);
+            if(isNaN(m)) return;
+            
+            mInput.value = '';
+            
+            await fetch('/chat', {
+                method: 'POST',
+                headers: {'Content-Type': 'application/json'},
+                body: JSON.stringify({user: u, msg: m})
+            });
+        }
+    </script>
+</body>
+</html>

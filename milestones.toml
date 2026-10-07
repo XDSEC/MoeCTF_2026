@@ -1,0 +1,110 @@
+[[milestones]]
+name = "从此比赛尽是坦途"
+description = "了解了平台环境的连接以及一些常见工具的使用"
+bonus_score = 0
+prerequisites = ["9_linux_xu_ni_huan_jing_an_zhuang_6a560bd4"]
+unlock_limit = 0
+
+[[milestones]]
+name = "有点了解星走路"
+description = "了解一些信息搜集的方法"
+bonus_score = 0
+prerequisites = [
+    "xing_zou_lu_de_lv_cheng_6a4c8ab6",
+    "xing_zou_lu_de_lv_cheng_level2_6a4c8b11",
+    "xing_zou_lu_de_lv_cheng_level3_6a4c8b4f",
+    "xing_zou_lu_de_hei_li_shi_6a6c4245",
+]
+unlock_limit = 1
+
+[[milestones]]
+name = "走进星走路"
+description = "掌握一些信息搜集方法"
+bonus_score = 0
+prerequisites = [
+    "xing_zou_lu_de_lv_cheng_6a4c8ab6",
+    "xing_zou_lu_de_lv_cheng_level2_6a4c8b11",
+    "xing_zou_lu_de_lv_cheng_level3_6a4c8b4f",
+    "xing_zou_lu_de_hei_li_shi_6a6c4245",
+]
+unlock_limit = 2
+
+[[milestones]]
+name = "你把星走路开了吧"
+description = "熟练掌握信息搜集的方法"
+bonus_score = 0
+prerequisites = [
+    "xing_zou_lu_de_lv_cheng_6a4c8ab6",
+    "xing_zou_lu_de_lv_cheng_level2_6a4c8b11",
+    "xing_zou_lu_de_lv_cheng_level3_6a4c8b4f",
+    "xing_zou_lu_de_hei_li_shi_6a6c4245",
+]
+unlock_limit = 0
+
+[[milestones]]
+name = "数字被无情清空"
+description = "你做出了“当零来敲门”。"
+bonus_score = 0
+prerequisites = ["cong_xiao_dao_da_yi_ci_bao_shu_6a431974"]
+unlock_limit = 0
+
+[[milestones]]
+name = "狠狠注入"
+description = "你成功做出ezpwn01、02、03三道题目。"
+bonus_score = 0
+prerequisites = [
+    "ezpwn01_6a649eb8",
+    "ezpwn02_6a6ee840",
+    "ezpwn03_6a9d5ccf",
+]
+unlock_limit = 0
+
+[[milestones]]
+name = "釜底抽薪"
+description = "你做出了“魔理沙偷走了重要的东西”。"
+bonus_score = 0
+prerequisites = ["mo_li_sha_tou_zou_liao_zhong_yao_de_dong_xi_6a49d75c"]
+unlock_limit = 0
+
+[[milestones]]
+name = "BASE全歼"
+description = '你做出了“ez_base"和"ez_base_revenge”。'
+bonus_score = 0
+prerequisites = ["ez_base_revenge_6a49d0b9"]
+unlock_limit = 0
+
+[[milestones]]
+name = "炫彩青蛙"
+description = "你做出了MoeCatchTheFrogs"
+bonus_score = 0
+prerequisites = ["moe_catch_the_frogs_6a7d9b03"]
+unlock_limit = 0
+
+[[milestones]]
+name = "中转妙妙屋"
+description = "你做出了“妙妙中转站”系列题目。"
+bonus_score = 0
+prerequisites = ["miao_miao_zhong_zhuan_zhan_xia_6a8bfc5f"]
+unlock_limit = 0
+
+[[milestones]]
+name = "七夕限定"
+description = "你做出了七夕限定的两道题目。"
+bonus_score = 0
+prerequisites = [
+    "kirakira_6a853d00",
+    "xu_xu_gei_mu_li_jiu_shi_zhe_yang_de_6a856415",
+]
+unlock_limit = 0
+
+[[milestones]]
+name = "你好，Pyjail"
+description = "成功完成 ez_ban_jail 系列，进入 Pyjail 的世界"
+bonus_score = 0
+prerequisites = [
+    "ez_ban_jai1_6a478de8",
+    "e2_ban_jail_6a478e07",
+    "3z_ban_jail_6a478e21",
+    "ez_b4n_jail_6a478e37",
+]
+unlock_limit = 0

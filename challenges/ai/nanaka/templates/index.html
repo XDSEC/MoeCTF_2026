@@ -1,0 +1,776 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>旮旯给木里就是这样的！</title>
+<style>
+:root {
+  --msgbox-bg: rgba(20,24,48,0.90); --msgbox-border: rgba(255,255,255,0.12);
+  --name-bg: rgba(11,52,110,0.92); --name-border: rgba(255,255,255,0.55);
+  --text-color: #e8e8f0; --accent: #ff7597;
+  --toolbar-bg: rgba(10,12,24,0.94); --toolbar-text: rgba(255,255,255,0.8);
+  --toolbar-hover: rgba(255,255,255,1); --toolbar-active: rgba(255,255,255,0.15);
+}
+*{margin:0;padding:0;box-sizing:border-box}
+body{width:100vw;height:100vh;overflow:hidden;font-family:"Noto Serif SC","Source Han Serif SC","SimSun",serif;background:#06060f;user-select:none;cursor:default;animation:bodyFadeIn .6s ease}
+@keyframes bodyFadeIn{from{opacity:0}to{opacity:1}}
+
+#stage{width:100%;height:100%;position:relative;background:linear-gradient(170deg,#12122e 0%,#0a101f 35%,#080d18 65%,#060a12 100%);overflow:hidden}
+#stage.in-game #msgbox-wrap,#stage.in-game #toolbar,#stage.in-game #sprite-wrap,#stage.in-game #input-bar,#stage.in-game #stats-panel{animation:stageFadeIn .6s ease both}
+@keyframes stageFadeIn{from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:translateY(0)}}
+#bg-img{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;z-index:0;opacity:0;transition:opacity 1.4s ease;filter:brightness(.72) saturate(.92)}
+#stage.in-game #bg-img{opacity:1}
+.stars{position:absolute;inset:0;pointer-events:none;background-image:radial-gradient(1.5px 1.5px at 8% 15%,rgba(255,255,255,.55),transparent),radial-gradient(1px 1px at 22% 40%,rgba(255,255,255,.35),transparent),radial-gradient(1.8px 1.8px at 45% 10%,rgba(255,255,255,.50),transparent),radial-gradient(1px 1px at 65% 28%,rgba(255,255,255,.30),transparent),radial-gradient(1.3px 1.3px at 78% 8%,rgba(255,255,255,.45),transparent),radial-gradient(1px 1px at 38% 55%,rgba(255,255,255,.30),transparent),radial-gradient(1.6px 1.6px at 58% 52%,rgba(255,255,255,.40),transparent),radial-gradient(1px 1px at 88% 60%,rgba(255,255,255,.28),transparent),radial-gradient(1.4px 1.4px at 12% 68%,rgba(255,255,255,.38),transparent),radial-gradient(1.7px 1.7px at 72% 72%,rgba(255,255,255,.42),transparent)}
+.moon{position:absolute;top:16%;right:21%;width:60px;height:60px;border-radius:50%;pointer-events:none;background:radial-gradient(circle at 38% 38%,#fffef5 0%,#f2e0b8 40%,#c8b080 100%);box-shadow:0 0 36px rgba(255,245,210,.18),0 0 70px rgba(255,245,210,.06)}
+.stars{animation:starTwinkle 7s ease-in-out infinite}
+@keyframes starTwinkle{0%,100%{opacity:.85}50%{opacity:1}}
+.clouds{position:absolute;inset:0;pointer-events:none;background:radial-gradient(240px 64px at 18% 32%,rgba(255,255,255,.06),transparent),radial-gradient(280px 72px at 76% 16%,rgba(255,255,255,.05),transparent),radial-gradient(200px 52px at 52% 56%,rgba(255,255,255,.04),transparent);animation:cloudDrift 90s ease-in-out infinite}
+@keyframes cloudDrift{0%,100%{transform:translateX(-5%)}50%{transform:translateX(5%)}}
+.fireflies{position:absolute;inset:0;pointer-events:none}
+.fireflies i{position:absolute;width:3px;height:3px;border-radius:50%;background:#ffe9a3;box-shadow:0 0 6px 2px rgba(255,233,163,.35);opacity:0;animation:fly 15s ease-in-out infinite}
+.fireflies i:nth-child(1){left:16%;top:56%;animation-duration:13s}
+.fireflies i:nth-child(2){left:64%;top:36%;animation-delay:3.5s;animation-duration:17s}
+.fireflies i:nth-child(3){left:82%;top:62%;animation-delay:7s;animation-duration:15s}
+@keyframes fly{0%,100%{opacity:0;transform:translate(0,0)}10%{opacity:.8}25%{opacity:.3;transform:translate(14px,-22px)}45%{opacity:.7;transform:translate(-10px,-38px)}65%{opacity:.2;transform:translate(8px,-54px)}85%{opacity:.6;transform:translate(-6px,-30px)}}
+body.light .fireflies{opacity:.35}
+
+#date-display{position:absolute;top:14px;left:18px;z-index:10;color:rgba(255,255,255,.6);font-size:12px;letter-spacing:2px;background:rgba(0,0,0,.4);padding:4px 12px;border-radius:10px}
+
+#stats-panel{position:absolute;top:14px;right:18px;z-index:10;display:flex;flex-direction:column;gap:4px;background:rgba(0,0,0,.45);border-radius:12px;padding:8px 14px;min-width:180px}
+.stat-row{display:flex;align-items:center;gap:5px;font-size:11px}
+.stat-icon{width:16px;text-align:center;font-size:12px}
+.stat-label{color:rgba(255,255,255,.62);min-width:28px}
+.stat-bar-outer{width:60px;height:4px;background:rgba(255,255,255,.12);border-radius:2px;overflow:hidden}
+.stat-bar-inner{height:100%;border-radius:2px;transition:width .5s ease}
+.stat-num{color:rgba(255,255,255,.72);min-width:22px;text-align:right;font-size:10px}
+#aff-bar-inner{background:linear-gradient(90deg,#ffb3c6,#ff7597)}
+#trust-bar-inner{background:linear-gradient(90deg,#8ab4f8,#4a90d9)}
+#frag-bar-inner{background:linear-gradient(90deg,#c4b5fd,#8b5cf6)}
+
+#sprite-wrap{position:absolute;bottom:200px;left:0;right:0;z-index:3;pointer-events:none;display:flex;align-items:flex-end;justify-content:center;width:100%;height:calc(100% - 280px)}
+#sprite-img{height:100%;max-height:62vh;width:auto;max-width:80vw;object-fit:contain;object-position:bottom;filter:brightness(1.06) saturate(1.02) drop-shadow(0 0 22px rgba(0,0,0,.5)) drop-shadow(0 0 16px rgba(130,170,255,.22));transition:opacity .6s ease;animation:breathe 4.5s ease-in-out infinite}
+@keyframes breathe{0%,100%{transform:translateY(0) scale(1)}50%{transform:translateY(-4px) scale(1.01)}}
+@keyframes spritePop{0%{transform:translateY(0)}25%{transform:translateY(-26px)}50%{transform:translateY(2px)}70%{transform:translateY(-8px)}100%{transform:translateY(0)}}
+#sprite-img.pop{animation:spritePop .5s ease-out,breathe 4.5s ease-in-out infinite}
+
+#msgbox-wrap{position:absolute;bottom:56px;left:0;right:0;z-index:5;display:flex;justify-content:center}
+#msgbox{width:96%;max-width:1100px;height:150px;display:flex;flex-direction:column;background:var(--msgbox-bg);border:1px solid var(--msgbox-border);border-radius:3px;padding:20px 30px 14px;position:relative;box-shadow:0 -4px 30px rgba(0,0,0,.4)}
+#name-tag{position:absolute;left:28px;top:-15px;background:var(--name-bg);color:#fff;font-size:16px;font-weight:bold;letter-spacing:2px;padding:4px 22px;border-radius:3px;border:1px solid var(--name-border);box-shadow:1px 1px 6px rgba(0,0,0,.4);z-index:6}
+#msg-text{color:var(--text-color);font-size:17px;line-height:1.85;letter-spacing:1px;min-height:0;flex:1;overflow-y:auto;overflow-x:hidden;word-break:break-word;white-space:pre-wrap;scrollbar-width:thin;scrollbar-color:rgba(255,255,255,.18) transparent}
+#msgbox.narrate #name-tag{display:none}
+#msgbox.narrate #msg-text{text-align:center;font-style:italic;opacity:.88;font-size:16px;letter-spacing:2px}
+#msgbox.tagless #name-tag{display:none}
+#msg-text.typing::after{content:"▍";animation:blink .8s infinite;opacity:.6;margin-left:2px}
+#msg-text.dim{opacity:.55;font-style:italic}
+@keyframes blink{50%{opacity:0}}
+#click-indicator{position:absolute;right:24px;bottom:8px;color:rgba(255,255,255,.35);font-size:12px;animation:pulse 1.5s infinite;display:none}
+@keyframes pulse{50%{opacity:.3}}
+
+#input-bar{display:flex;gap:8px;align-items:center;justify-content:flex-end;margin-top:12px;flex-shrink:0;opacity:0;pointer-events:none;transition:opacity .35s}
+#input-bar.visible{opacity:1;pointer-events:auto}
+#msg-input{flex:1;background:rgba(255,255,255,.14);border:2px solid rgba(255,117,151,.45);border-radius:20px;padding:9px 16px;color:#fff;font-size:15px;outline:none;font-family:inherit;letter-spacing:1px;transition:border-color .3s}
+#msg-input:focus{border-color:#ff7597;box-shadow:0 0 12px rgba(255,117,151,.25)}
+#msg-input::placeholder{color:rgba(255,255,255,.4)}
+#send-btn{width:40px;height:40px;border-radius:50%;background:var(--accent);border:none;cursor:pointer;font-size:18px;color:#fff;transition:transform .2s;flex-shrink:0;display:flex;align-items:center;justify-content:center}
+#send-btn:hover{transform:scale(1.08)}
+#send-btn:disabled{opacity:.35;transform:scale(1)}
+
+#toolbar{position:absolute;bottom:0;left:0;right:0;height:48px;background:var(--toolbar-bg);display:flex;align-items:center;justify-content:center;gap:3px;z-index:10;border-top:1px solid rgba(255,255,255,.06)}
+#toolbar .tbtn{background:none;border:none;color:var(--toolbar-text);font-size:12px;letter-spacing:1.5px;cursor:pointer;padding:6px 14px;font-family:inherit;transition:color .2s,background .2s;border-radius:2px}
+#toolbar .tbtn:hover{color:var(--toolbar-hover);background:rgba(255,255,255,.05)}
+#toolbar .tbtn.active{color:#fff;background:var(--toolbar-active)}
+#toolbar .tbtn .hotkey{font-size:9px;color:rgba(255,255,255,.45);margin-left:4px}
+#toolbar .tsep{width:1px;height:18px;background:rgba(255,255,255,.1);margin:0 6px}
+#skip-indicator{position:absolute;top:10px;left:50%;transform:translateX(-50%);z-index:11;color:var(--accent);font-size:12px;letter-spacing:2px;display:none;background:rgba(0,0,0,.6);padding:3px 16px;border-radius:10px}
+#skip-indicator.show{display:block}
+#auto-indicator{position:absolute;top:10px;left:50%;transform:translateX(-50%);z-index:11;color:#8cf;font-size:12px;letter-spacing:2px;display:none;background:rgba(0,0,0,.6);padding:3px 16px;border-radius:10px}
+#auto-indicator.show{display:block}
+
+#ctx-menu{position:fixed;z-index:50;display:none;background:rgba(18,20,36,.96);border:1px solid rgba(255,255,255,.15);border-radius:4px;padding:4px 0;min-width:160px;box-shadow:4px 4px 20px rgba(0,0,0,.6)}
+#ctx-menu .ctx-item{display:flex;justify-content:space-between;align-items:center;padding:8px 16px;color:#ccc;font-size:13px;cursor:pointer;letter-spacing:1px;transition:background .15s}
+#ctx-menu .ctx-item:hover{background:rgba(255,255,255,.08);color:#fff}
+#ctx-menu .ctx-item .ctx-hotkey{color:rgba(255,255,255,.3);font-size:11px;margin-left:24px}
+#ctx-menu .ctx-sep{height:1px;background:rgba(255,255,255,.08);margin:4px 8px}
+
+.full-overlay{position:absolute;inset:0;z-index:40;display:flex;align-items:center;justify-content:center;opacity:0;pointer-events:none;transition:opacity .5s ease}
+.full-overlay.open{opacity:1;pointer-events:auto}
+.full-overlay.open .title-btn{animation:titleBtnIn .4s ease both}
+@keyframes titleBtnIn{from{opacity:0;transform:translateY(10px)}to{opacity:1;transform:translateY(0)}}
+
+#title-screen{background:rgba(6,6,15,.92);flex-direction:column;gap:8px}
+#title-logo{font-size:32px;color:#fff;letter-spacing:5px;margin-bottom:8px;text-shadow:0 0 30px rgba(255,255,255,.2)}
+#title-sub{font-size:16px;color:rgba(255,255,255,.5);letter-spacing:3px;margin-bottom:30px}
+body.light #title-sub{color:rgba(25,25,55,.75);text-shadow:0 0 4px rgba(255,255,255,.9)}
+
+#title-bg{position:absolute;inset:0;z-index:-2;background:linear-gradient(170deg,rgba(18,18,46,.55) 0%,rgba(10,16,31,.62) 35%,rgba(8,13,24,.7) 65%,rgba(6,10,18,.78) 100%),url('static/backgrounds/title_bg.jpg') center/cover no-repeat}
+.title-btn{color:rgba(255,255,255,.55);font-size:16px;letter-spacing:3px;cursor:pointer;padding:8px 24px;transition:color .3s;font-family:inherit;background:none;border:none}
+.title-btn:hover{color:#fff}
+.title-btn.disabled{color:rgba(255,255,255,.15);cursor:default}
+button:focus-visible{outline:1px solid rgba(255,117,151,.85);outline-offset:2px}
+.title-btn:hover{text-shadow:0 0 12px rgba(255,255,255,.25)}
+.cg-card.unlocked:hover{border-color:rgba(255,255,255,.5);transform:translateY(-2px)}
+.cg-card{transition:border-color .3s,transform .2s,background .3s}
+#title-copyright{position:absolute;bottom:50px;color:rgba(255,255,255,.3);font-size:12px;letter-spacing:2px}
+
+#chapter-overlay{background:rgba(0,0,0,.92);flex-direction:column;gap:10px}
+#chapter-num{color:rgba(255,255,255,.3);font-size:14px;letter-spacing:4px}
+#chapter-title{color:#fff;font-size:24px;letter-spacing:5px}
+
+#ending-screen{background:rgba(0,0,0,.72);flex-direction:column;gap:12px}
+#ending-type{font-size:14px;letter-spacing:4px}
+#ending-name{font-size:28px;letter-spacing:6px;margin-bottom:8px}
+#ending-chapter{font-size:14px;letter-spacing:3px;margin-bottom:16px;color:rgba(255,255,255,.55)}
+#ending-text{font-size:16px;line-height:2;text-align:center;max-width:600px;max-height:46vh;overflow-y:auto;scrollbar-width:thin;letter-spacing:1px;white-space:pre-wrap;text-shadow:0 1px 6px rgba(0,0,0,.55)}
+#ending-hint{font-size:13px;color:rgba(255,255,255,.4);margin-top:12px;text-align:center;max-width:500px;line-height:1.8;white-space:pre-wrap}
+#ending-flag{font-size:21px;margin-top:16px;padding:10px 22px;border-radius:8px;border:1px solid rgba(255,215,130,.55);letter-spacing:1px;background:rgba(255,255,255,.05);box-shadow:0 0 18px rgba(255,200,120,.22)}
+#ending-continue{position:absolute;bottom:60px;color:rgba(255,255,255,.3);font-size:13px;letter-spacing:2px;animation:pulse 2s infinite}
+#ending-continue.ready{color:rgba(255,255,255,.8);border:1px solid rgba(255,255,255,.28);padding:8px 26px;border-radius:16px;background:rgba(255,255,255,.07);animation:none}
+#ending-home{position:absolute;bottom:52px;font-size:16px;padding:10px 32px;border-radius:24px;letter-spacing:3px}
+
+#cg-overlay{background:rgba(0,0,0,.88);flex-wrap:wrap;align-content:center;justify-content:center;padding:40px;gap:20px;overflow-y:auto;background:linear-gradient(180deg,rgba(10,12,24,.7) 0%,rgba(8,10,20,.78) 60%,rgba(6,8,16,.85) 100%),url('static/backgrounds/bg_festival.jpg') center/cover no-repeat}
+.cg-card{width:200px;height:130px;border:1px solid rgba(255,255,255,.1);border-radius:8px;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:6px;transition:border-color .3s;background:rgba(255,255,255,.03)}
+.cg-card.unlocked{cursor:pointer;border-color:rgba(255,255,255,.25)}
+.cg-card.unlocked:hover{border-color:rgba(255,255,255,.5)}
+.cg-card .cg-status{font-size:22px}
+.cg-card .cg-name{font-size:13px;letter-spacing:2px;color:rgba(255,255,255,.6)}
+.cg-card .cg-chapter{font-size:10px;color:rgba(255,255,255,.3);letter-spacing:1px}
+body.light #cg-overlay{background:linear-gradient(180deg,rgba(240,242,248,.82) 0%,rgba(232,236,244,.88) 100%),url('static/backgrounds/bg_festival.jpg') center/cover no-repeat;filter:brightness(1.02)}
+body.light #cg-overlay .cg-card .cg-name{color:rgba(30,30,50,.85)!important}
+body.light #cg-overlay .cg-card .cg-chapter{color:rgba(30,30,50,.55)!important}
+body.light #cg-overlay .cg-card .cg-status{opacity:1!important}
+.cg-card.locked .cg-name{color:rgba(255,255,255,.45)}
+.cg-card.locked .cg-chapter{color:rgba(255,255,255,.3)}
+.cg-title{width:100%;text-align:center;color:rgba(255,255,255,.75);font-size:17px;letter-spacing:5px;margin-bottom:4px}
+.cg-title .cg-progress{font-size:13px;color:rgba(255,200,140,.8);letter-spacing:2px;margin-left:10px}
+body.light #cg-overlay .cg-title{color:rgba(30,30,50,.8)}
+body.light #cg-overlay .cg-title .cg-progress{color:#a06a20}
+
+.panel-overlay{position:absolute;inset:0;z-index:45;background:rgba(0,0,0,.78);display:flex;align-items:center;justify-content:center;opacity:0;pointer-events:none;transition:opacity .3s ease}
+.panel-overlay.open{opacity:1;pointer-events:auto}
+.panel{background:rgba(18,20,36,.97);border:1px solid rgba(255,255,255,.15);border-radius:6px;padding:28px 32px;min-width:520px;max-width:650px;max-height:85vh;color:#ccc;font-size:14px;letter-spacing:1px;display:flex;flex-direction:column;transform:scale(.96);transition:transform .3s ease;position:relative}
+.panel-overlay.open .panel{transform:scale(1)}
+.panel h3{font-size:18px;color:#fff;margin-bottom:16px;font-weight:normal;letter-spacing:3px;flex-shrink:0}
+.panel .close-btn{position:absolute;top:12px;right:14px;background:none;border:none;color:#888;font-size:20px;cursor:pointer;line-height:1}
+.panel .close-btn:hover{color:#fff}
+.save-slot{display:flex;align-items:center;justify-content:space-between;padding:10px 14px;margin-bottom:6px;background:rgba(255,255,255,.03);border:1px solid rgba(255,255,255,.06);border-radius:4px;cursor:pointer;transition:background .2s}
+.save-slot:hover{background:rgba(255,255,255,.08)}
+.save-slot.qsave{border-color:rgba(255,117,151,.2)}
+.save-slot .slot-num{color:rgba(255,255,255,.25);font-size:12px;min-width:28px}
+.save-slot .slot-info{flex:1;margin:0 12px}
+.save-slot .slot-info .slot-date{font-size:11px;color:rgba(255,255,255,.22)}
+.save-slot .slot-tag{font-size:10px;color:#ff7597;background:rgba(255,117,151,.1);padding:1px 6px;border-radius:3px;margin-left:6px}
+.save-slot .slot-aff{color:#ffb3c6;font-size:12px}
+#log-content{flex:1;overflow-y:auto;line-height:2;scrollbar-width:thin;scrollbar-color:rgba(255,255,255,.12) transparent}
+#log-panel .panel{min-width:660px;min-height:62vh;max-width:720px}
+.config-content{line-height:2.5;font-size:14px;color:rgba(255,255,255,.75);display:flex;flex-direction:column;align-items:center;text-align:center}
+.config-content .stats-row{display:flex;gap:16px;flex-wrap:wrap}
+#sys-aff{color:#ffb3c6}#sys-trust{color:#8ab4f8}#sys-frag{color:#c4b5fd}
+.config-content .config-info{font-size:12px;color:rgba(255,255,255,.4);margin:10px 0;padding:8px 14px;background:rgba(255,255,255,.06);border:1px solid rgba(255,255,255,.08);border-radius:8px;line-height:1.8}
+.config-goal{margin-top:4px;color:rgba(255,200,140,.75);font-size:11px}
+.config-copy{margin-top:4px;color:rgba(255,255,255,.35);font-size:11px}
+.reset-btn{margin-top:10px;background:rgba(255,100,100,.15);border:1px solid rgba(255,100,100,.3);color:#f99;padding:6px 18px;border-radius:4px;cursor:pointer;font-family:inherit;letter-spacing:1px;font-size:13px}
+body.light .config-content{color:#444}
+body.light .config-content .config-info{color:#777;background:rgba(0,0,0,.05);border-color:rgba(0,0,0,.08)}
+body.light .config-goal{color:#a06a20}
+body.light .config-copy{color:rgba(0,0,0,.35)}
+body.light .reset-btn{background:rgba(200,60,60,.1);border-color:rgba(200,60,60,.4);color:#c33}
+.reset-btn.flash{animation:resetPulse 1.2s infinite;border-color:#ff6666;color:#ff6666}
+@keyframes resetPulse{0%,100%{box-shadow:0 0 0 0 rgba(255,100,100,.55)}50%{box-shadow:0 0 14px 4px rgba(255,100,100,.4)}}
+#log-content::-webkit-scrollbar{width:4px}
+#log-content::-webkit-scrollbar-thumb{background:rgba(255,255,255,.12);border-radius:2px}
+#msg-text::-webkit-scrollbar{width:4px}
+#msg-text::-webkit-scrollbar-thumb{background:rgba(255,255,255,.18);border-radius:2px}
+.log-line{padding:2px 0;border-bottom:1px solid rgba(255,255,255,.04);font-size:14px}
+.log-line .log-name{color:#8ab4f8;margin-right:8px;font-weight:bold;min-width:55px;display:inline-block}
+.log-line .log-text{color:#ccc;white-space:pre-wrap;word-break:break-word}
+.log-line.log-user .log-name{color:rgba(255,255,255,.35)}
+.log-delta{font-size:10px;color:#ffb3c6;margin-left:6px;white-space:nowrap}
+
+#achievement-toast{position:fixed;bottom:70px;right:20px;z-index:60;background:rgba(18,20,36,.95);border:1px solid rgba(255,255,255,.2);border-radius:8px;padding:12px 18px;display:flex;align-items:center;gap:10px;transform:translateX(120%);transition:transform .4s cubic-bezier(.25,.8,.25,1.2);box-shadow:0 4px 20px rgba(0,0,0,.5)}
+#achievement-toast.show{transform:translateX(0)}
+#achievement-toast .ach-icon{font-size:24px}
+#achievement-toast .ach-info{display:flex;flex-direction:column}
+#achievement-toast .ach-title{color:#fff;font-size:14px;letter-spacing:2px}
+#achievement-toast .ach-desc{color:rgba(255,255,255,.4);font-size:11px;letter-spacing:2px}
+
+.ui-card{background:rgba(18,20,36,.97);border:1px solid rgba(255,255,255,.16);border-radius:12px;padding:26px 36px;display:flex;flex-direction:column;align-items:center;gap:14px;box-shadow:0 8px 40px rgba(0,0,0,.5);max-width:86vw}
+body.light .ui-card{background:rgba(255,255,255,.97);border-color:rgba(0,0,0,.12);box-shadow:0 8px 30px rgba(0,0,0,.18)}
+#name-overlay{background:rgba(0,0,0,.72);flex-direction:column;gap:14px;transition:opacity .22s ease}
+#name-overlay .name-prompt{color:#fff;font-size:18px;letter-spacing:3px}
+#name-overlay .name-sub{color:rgba(255,255,255,.35);font-size:13px;letter-spacing:2px}
+#name-input{width:260px;background:rgba(255,255,255,.12);border:2px solid rgba(255,117,151,.5);border-radius:24px;padding:10px 20px;color:#fff;font-size:18px;text-align:center;outline:none;font-family:inherit;letter-spacing:3px;transition:border-color .3s}
+#name-input:focus{border-color:#ff7597;box-shadow:0 0 14px rgba(255,117,151,.3)}
+#name-input::placeholder{color:rgba(255,255,255,.45)}
+#name-confirm{background:var(--accent);border:none;color:#fff;font-size:15px;letter-spacing:3px;padding:8px 28px;border-radius:20px;cursor:pointer;font-family:inherit;transition:transform .2s}
+#name-confirm:hover{transform:scale(1.06)}
+#team-auth-overlay{background:rgba(0,0,0,.78);flex-direction:column;gap:14px;transition:opacity .22s ease}
+#team-auth-overlay .name-prompt{color:#fff;font-size:18px;letter-spacing:3px}
+#team-auth-overlay .name-sub{color:rgba(255,255,255,.35);font-size:13px;letter-spacing:2px}
+#team-code-input{width:280px;background:rgba(255,255,255,.12);border:2px solid rgba(130,170,255,.5);border-radius:24px;padding:10px 20px;color:#fff;font-size:16px;text-align:center;outline:none;font-family:inherit;letter-spacing:3px;transition:border-color .3s}
+#team-code-input:focus{border-color:#82aaff;box-shadow:0 0 14px rgba(130,170,255,.3)}
+#team-code-input::placeholder{color:rgba(255,255,255,.45)}
+#team-auth-btn{background:var(--accent);border:none;color:#fff;font-size:15px;letter-spacing:3px;padding:8px 28px;border-radius:20px;cursor:pointer;font-family:inherit;transition:transform .2s}
+#team-auth-btn:hover{transform:scale(1.06)}
+#team-auth-btn:disabled{opacity:.6;cursor:wait}
+#team-auth-msg{color:#ff7597;font-size:13px;letter-spacing:1px;min-height:18px}
+
+#esc-overlay{background:rgba(0,0,0,.72);flex-direction:column;gap:20px}
+#esc-overlay .esc-title{color:#fff;font-size:18px;letter-spacing:3px}
+#esc-overlay .esc-btns{display:flex;gap:20px}
+.esc-btn{background:rgba(255,255,255,.1);border:1px solid rgba(255,255,255,.2);color:#ccc;font-size:15px;letter-spacing:2px;padding:8px 24px;border-radius:20px;cursor:pointer;font-family:inherit;transition:all .3s}
+.esc-btn:hover{background:rgba(255,255,255,.18);color:#fff}
+.esc-btn.danger{background:rgba(255,100,100,.15);border-color:rgba(255,100,100,.35);color:#f99}
+.esc-btn.danger:hover{background:rgba(255,100,100,.25);color:#f66}
+
+/* ===== 亮色模式 ===== */
+body.light{background:#f0f0f5}
+body.light #stage{background:linear-gradient(170deg,#e8ecf4 0%,#dfe3ee 35%,#d5dae8 65%,#ccd1e0 100%)}
+body.light .moon{opacity:.25}
+body.light .stars{opacity:.2}
+body.light #msgbox{background:rgba(255,255,255,.88);border-color:rgba(0,0,0,.1)}
+body.light #msg-text{color:#2a2a3a}
+body.light #name-tag{background:rgba(60,90,150,.9);border-color:rgba(255,255,255,.6)}
+body.light #toolbar{background:rgba(240,242,248,.94);border-color:rgba(0,0,0,.08)}
+body.light #toolbar .tbtn{color:rgba(0,0,0,.62)}
+body.light #toolbar .tbtn:hover{color:rgba(0,0,0,.75)}
+body.light #msg-input{background:rgba(0,0,0,.04);border-color:rgba(0,0,0,.15);color:#333}
+body.light #msg-input::placeholder{color:rgba(0,0,0,.3)}
+body.light .panel-overlay{background:rgba(0,0,0,.45)}
+body.light .panel{background:rgba(255,255,255,.95);border-color:rgba(0,0,0,.12);color:#444}
+body.light .panel h3{color:#222}
+body.light #title-screen{background:rgba(240,242,248,.92)}
+body.light #title-logo{color:#1a1a2e;text-shadow:none}
+
+body.light #title-bg{background:linear-gradient(180deg,rgba(255,252,244,.18) 0%,rgba(255,252,244,.05) 60%,rgba(240,238,232,.15) 100%),url('static/backgrounds/title_bg_light.jpg') center/cover no-repeat}
+body.light .full-overlay{background:rgba(240,242,248,.92)}
+body.light #bg-img{filter:brightness(.78) saturate(.85)}
+body.light #sprite-img{filter:brightness(1.04) saturate(.98) drop-shadow(0 0 16px rgba(0,0,0,.25)) drop-shadow(0 0 10px rgba(255,255,255,.5))}
+body.light #ending-screen{background:rgba(240,242,248,.8)}
+body.light #ending-name{color:#222!important}
+body.light #ending-text{color:#444;text-shadow:none}
+body.light #date-display{color:rgba(0,0,0,.4);background:rgba(255,255,255,.4)}
+body.light #stats-panel{background:rgba(255,255,255,.5)}
+body.light .stat-label{color:rgba(0,0,0,.5)}
+body.light .stat-num{color:rgba(0,0,0,.55)}
+body.light #aff-stage{color:rgba(0,0,0,.45)}
+body.light .title-btn{color:rgba(25,25,55,.85);text-shadow:0 0 4px rgba(255,255,255,.9),0 1px 3px rgba(255,255,255,.7)}
+body.light .title-btn:hover{color:rgba(0,0,0,.8)}
+body.light #ctx-menu{background:rgba(255,255,255,.95);border-color:rgba(0,0,0,.15)}
+body.light #ctx-menu .ctx-item{color:#555}
+body.light #ctx-menu .ctx-item:hover{color:#111}
+body.light .panel{color:#444}
+body.light .panel h3{color:#222}
+body.light .panel label{color:#444!important}
+body.light .panel b{color:#1a1a2e!important}
+body.light .panel div{color:#555}
+body.light #log-content .log-text{color:#444}
+body.light #log-content .log-name{color:#3a6fb5}
+body.light #save-slots div,body.light #load-slots div{color:#555}
+body.light .save-slot .slot-info{color:#555}
+body.light .save-slot .slot-date{color:#888}
+body.light .save-slot .slot-aff{color:#d4687c}
+body.light .save-slot .slot-num{color:#999}
+body.light .close-btn{color:#888}
+body.light .close-btn:hover{color:#222}
+
+/* ===== 亮色模式系统修复（QA 批次）===== */
+body.light #ending-chapter{color:rgba(0,0,0,.5)}
+body.light #ending-hint{color:rgba(0,0,0,.45)}
+body.light #ending-continue{color:rgba(0,0,0,.4)}
+body.light #ending-continue.ready{color:rgba(0,0,0,.8);border-color:rgba(0,0,0,.3);background:rgba(0,0,0,.05)}
+body.light #click-indicator{color:rgba(0,0,0,.35)}
+body.light #msg-text{scrollbar-color:rgba(0,0,0,.2) transparent}
+body.light #msg-text::-webkit-scrollbar-thumb{background:rgba(0,0,0,.2)}
+body.light #title-copyright{color:rgba(0,0,0,.45)}
+body.light #toolbar .tbtn.active{color:#111;background:rgba(0,0,0,.08)}
+body.light #toolbar .tbtn .hotkey{color:rgba(0,0,0,.4)}
+body.light .log-line.log-user .log-name{color:rgba(0,0,0,.4)}
+body.light .log-delta{color:#d4687c}
+body.light #name-overlay{background:rgba(240,242,248,.55)}
+body.light #name-overlay .name-prompt{color:#1a1a2e}
+body.light #name-overlay .name-sub{color:rgba(0,0,0,.45)}
+body.light #name-input{color:#333;background:rgba(0,0,0,.05);border-color:rgba(0,0,0,.2)}
+body.light #name-input::placeholder{color:rgba(0,0,0,.35)}
+body.light #team-auth-overlay{background:rgba(240,242,248,.55)}
+body.light #team-auth-overlay .name-prompt{color:#1a1a2e}
+body.light #team-auth-overlay .name-sub{color:rgba(0,0,0,.45)}
+body.light #team-code-input{color:#333;background:rgba(0,0,0,.05);border-color:rgba(0,0,0,.2)}
+body.light #team-code-input::placeholder{color:rgba(0,0,0,.35)}
+body.light #team-auth-msg{color:#c04040}
+body.light #esc-overlay{background:rgba(240,242,248,.55)}
+body.light #esc-overlay .esc-title{color:#1a1a2e}
+body.light .esc-btn{color:#444;background:rgba(0,0,0,.06);border-color:rgba(0,0,0,.18)}
+body.light .esc-btn:hover{background:rgba(0,0,0,.12);color:#111}
+body.light .esc-btn.danger{color:#c33;background:rgba(200,60,60,.1);border-color:rgba(200,60,60,.35)}
+.esc-sub{font-size:13px;letter-spacing:2px;color:rgba(255,255,255,.45)}
+body.light .esc-sub{color:rgba(0,0,0,.5)}
+.title-exit{font-size:13px;color:rgba(255,255,255,.3)}
+body.light .title-exit{color:rgba(0,0,0,.4)}
+body.light #cg-overlay #cg-back{color:rgba(30,30,50,.55)!important}
+/* 亮色背景图自然显现 */
+body.light #bg-img{filter:none}
+
+
+/* 主题切换开关（替代丑 checkbox） */
+.theme-switch{position:relative;display:inline-flex;align-items:center;gap:10px;cursor:pointer;font-size:14px;color:rgba(255,255,255,.8);user-select:none}
+.theme-switch input{display:none}
+.theme-switch .track{width:48px;height:26px;background:rgba(255,255,255,.12);border-radius:13px;transition:background .3s;position:relative;flex-shrink:0}
+.theme-switch .thumb{position:absolute;top:3px;left:3px;width:20px;height:20px;background:#ff7597;border-radius:50%;transition:transform .3s;display:flex;align-items:center;justify-content:center;font-size:12px}
+.theme-switch input:checked+.track{background:rgba(255,200,100,.3)}
+.theme-switch input:checked+.track .thumb{transform:translateX(22px);background:#ffb347}
+body.light .theme-switch{color:#444!important}
+body.light .theme-switch .track{background:rgba(0,0,0,.1)}
+body.light .theme-switch input:checked+.track{background:rgba(100,150,255,.25)}
+
+@media(max-width:768px){
+  #sprite-wrap{width:100%;bottom:232px;height:calc(100% - 280px)}#sprite-img{max-height:50vh;max-width:94vw}#msgbox{padding:16px 18px;min-height:110px;width:98%}#msg-text{font-size:15px}#name-tag{font-size:14px;padding:3px 16px;left:16px;top:-12px}#toolbar{gap:0;height:40px}#toolbar .tbtn{font-size:10px;padding:4px 8px;letter-spacing:1px}#toolbar .tbtn .hotkey{display:none}#toolbar .tsep{margin:0 2px}#msg-input{font-size:16px}#msgbox-wrap{bottom:46px}.panel{min-width:92vw;padding:18px}#title-logo{font-size:24px}#stats-panel{min-width:150px;padding:6px 10px}#ending-text{max-height:38vh}#ending-flag{font-size:17px}
+}
+</style>
+</head>
+<body>
+
+<div id="stage">
+  <img id="bg-img" alt="">
+  <div class="stars"></div>
+  <div class="moon"></div>
+  <div class="clouds"></div>
+  <div class="fireflies"><i></i><i></i><i></i></div>
+
+  <div id="date-display"></div>
+  <div id="stats-panel">
+    <div class="stat-row"><span class="stat-icon">💛</span><span class="stat-label">好感</span><div class="stat-bar-outer"><div id="aff-bar-inner" class="stat-bar-inner" style="width:0%"></div></div><span id="aff-num" class="stat-num">0</span></div>
+    <div class="stat-row"><span class="stat-icon">🔒</span><span class="stat-label">信赖</span><div class="stat-bar-outer"><div id="trust-bar-inner" class="stat-bar-inner" style="width:0%"></div></div><span id="trust-num" class="stat-num">0</span></div>
+    <div class="stat-row"><span class="stat-icon">🌸</span><span class="stat-label">记忆</span><div class="stat-bar-outer"><div id="frag-bar-inner" class="stat-bar-inner" style="width:0%"></div></div><span id="frag-num" class="stat-num">0/5</span></div>
+  </div>
+
+
+  <div id="skip-indicator">SKIP</div>
+  <div id="auto-indicator">AUTO</div>
+
+  <div id="sprite-wrap"><img id="sprite-img" src="" alt=""></div>
+
+  <div id="msgbox-wrap"><div id="msgbox"><div id="name-tag">七夏</div><div id="msg-text"></div><div id="input-bar"><input id="msg-input" type="text" placeholder="说点什么..." maxlength="200" autocomplete="off"><button id="send-btn">→</button></div><div id="click-indicator">▼</div></div></div>
+
+  <div id="toolbar">
+    <button class="tbtn" onclick="openPanel('save')">SAVE<span class="hotkey">S</span></button>
+    <button class="tbtn" onclick="openPanel('load')">LOAD<span class="hotkey">L</span></button>
+    <span class="tsep"></span>
+    <button class="tbtn" onclick="quickSave()">Q.SAVE</button>
+    <button class="tbtn" onclick="quickLoad()">Q.LOAD</button>
+    <span class="tsep"></span>
+    <button class="tbtn" onclick="openPanel('log')">LOG<span class="hotkey">PgUp</span></button>
+    <span class="tsep"></span>
+    <button class="tbtn" id="auto-btn">AUTO</button>
+    <button class="tbtn" id="skip-btn">SKIP</button>
+    <span class="tsep"></span>
+    <button class="tbtn" onclick="openPanel('system')">CONFIG</button>
+  </div>
+
+  <!-- 标题画面 -->
+  <div id="title-screen" class="full-overlay open">
+    <div id="title-bg"></div>
+    <div id="title-logo">旮旯给木里就是这样的！</div>
+    <div id="title-sub">MoeCTF 2026 · 七夕限定</div>
+    <button class="title-btn" onclick="newGame()">▶ NEW GAME</button>
+    <button class="title-btn" id="title-continue" onclick="titleLoad()">CONTINUE</button>
+    <button class="title-btn" onclick="openCGMode()">CG MODE</button>
+    <button class="title-btn" onclick="openConfigFromTitle()">CONFIG</button>
+    <div style="margin-top:20px">
+      <button class="title-btn title-exit" onclick="doExit()">EXIT</button>
+    </div>
+    <div id="title-copyright">© L-Team · 七夏</div>
+  </div>
+
+  <div id="chapter-overlay" class="full-overlay">
+    <div id="chapter-num"></div>
+    <div id="chapter-title"></div>
+  </div>
+
+  <div id="ending-screen" class="full-overlay">
+    <div id="ending-type"></div>
+    <div id="ending-name"></div>
+    <div id="ending-chapter"></div>
+    <div id="ending-text"></div>
+    <div id="ending-flag" style="display:none"></div>
+    <div id="ending-hint"></div>
+    <div id="ending-continue">点击任意位置继续</div>
+    <button id="ending-home" class="esc-btn" style="display:none">回到标题</button>
+  </div>
+
+  <div id="cg-overlay" class="full-overlay"></div>
+
+  <div id="name-overlay" class="full-overlay">
+    <div class="ui-card">
+      <div class="name-prompt">你的名字是？</div>
+      <div class="name-sub">七夏会这样称呼你</div>
+      <input id="name-input" type="text" placeholder="输入名字..." maxlength="8" autocomplete="off">
+      <button id="name-confirm" onclick="confirmName()">确定</button>
+    </div>
+  </div>
+
+  <!-- 身份验证：必须先输入队伍密钥完成验证才能开始对话 -->
+  <div id="team-auth-overlay" class="full-overlay">
+    <div class="ui-card">
+      <div class="name-prompt">身份验证</div>
+      <div class="name-sub">请输入比赛队伍密钥</div>
+      <input id="team-code-input" type="password" placeholder="输入队伍密钥..." maxlength="64" autocomplete="off">
+      <div id="team-auth-msg" class="auth-msg"></div>
+      <button id="team-auth-btn" onclick="submitTeamAuth()">验证</button>
+    </div>
+  </div>
+
+  <div id="esc-overlay" class="full-overlay">
+    <div class="ui-card">
+      <div class="esc-title">回到标题画面？</div>
+      <div class="esc-sub">当前进度将不会保存</div>
+      <div class="esc-btns">
+        <button class="esc-btn" onclick="window._endingEsc?window._escContinue():closeEscOverlay()">继续游戏</button>
+        <button class="esc-btn danger" onclick="window._endingEsc?window._escReturn():returnToTitle()">返回标题</button>
+      </div>
+    </div>
+  </div>
+
+  <div id="save-panel" class="panel-overlay"><div class="panel"><button class="close-btn" onclick="closePanel('save');restoreDialog()">✕</button><h3>💾 SAVE</h3><div id="save-slots" style="overflow-y:auto;flex:1"></div></div></div>
+  <div id="load-panel" class="panel-overlay"><div class="panel"><button class="close-btn" onclick="closePanel('load');restoreDialog()">✕</button><h3>📂 LOAD</h3><div id="load-slots" style="overflow-y:auto;flex:1"></div></div></div>
+  <div id="log-panel" class="panel-overlay"><div class="panel"><button class="close-btn" onclick="closePanel('log');restoreDialog()">✕</button><h3>📜 BACKLOG</h3><div id="log-content"></div></div></div>
+  <div id="system-panel" class="panel-overlay">
+    <div class="panel"><button class="close-btn" onclick="closePanel('system');restoreDialog()">✕</button><h3>⚙ CONFIG</h3>
+      <div class="config-content">
+        <div class="stats-row">
+          <span>❤️ 好感：<b id="sys-aff">0</b></span>
+          <span>🔒 信赖：<b id="sys-trust">0</b></span>
+          <span>🌸 记忆：<b id="sys-frag">0/5</b></span>
+        </div>
+        <div>阶段：<b id="sys-stage">陌生人</b> ｜ 对话：<b id="sys-msgs">0</b> 轮</div>
+        <div class="config-info">
+          Enter / Space → 发送消息<br>S → 快速存档 &nbsp; L → 快速读档<br>PgUp → 对话回溯 &nbsp; Esc → 返回
+        </div>
+        <label class="theme-switch">
+          <input type="checkbox" id="theme-toggle" onchange="toggleTheme()">
+          <span class="track"><span class="thumb">☀️</span></span>
+          <span>亮色模式</span>
+        </label>
+        <div class="config-goal">目标：把好感度拉满，让她想起你 · 记忆散落在夏天的关键词里</div>
+        <div class="config-copy">旮旯给木里就是这样的！ · moectf 2026</div>
+        <button class="reset-btn" onclick="resetGame()">重新开始</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div id="ctx-menu">
+  <div class="ctx-item" onclick="openPanel('save');hideCtx()">保存<span class="ctx-hotkey">S</span></div>
+  <div class="ctx-item" onclick="openPanel('load');hideCtx()">读取<span class="ctx-hotkey">L</span></div>
+  <div class="ctx-sep"></div>
+  <div class="ctx-item" onclick="quickSave();hideCtx()">快速保存</div>
+  <div class="ctx-item" onclick="quickLoad();hideCtx()">快速读取</div>
+  <div class="ctx-sep"></div>
+  <div class="ctx-item" onclick="openPanel('log');hideCtx()">对话回溯<span class="ctx-hotkey">PgUp</span></div>
+  <div class="ctx-sep"></div>
+  <div class="ctx-item">自动模式</div>
+  <div class="ctx-item">跳过模式</div>
+  <div class="ctx-sep"></div>
+  <div class="ctx-item" onclick="openPanel('system');hideCtx()">设置</div>
+</div>
+
+<div id="achievement-toast"><span class="ach-icon"></span><div class="ach-info"><span class="ach-title"></span><span class="ach-desc"></span></div></div>
+
+<script>const BOOT={{ boot|tojson }};const PROLOGUE=BOOT.prologue||[];const GOAL_TEXT=BOOT.goal_text||'';const ATMOS=BOOT.atmos_line||'';const FRAGMENT_KWS=BOOT.fragment_keywords||[];const FRAGMENT_WALL=BOOT.fragment_wall||{};const STAFF_ROOM=BOOT.staff_room||[];</script>
+
+<script>
+const STATE={inputReady:false,affection:BOOT.affection,trust:BOOT.trust,fragments:Array.isArray(BOOT.fragments)?BOOT.fragments.slice():[],stage:0,stageNames:['陌生人','有点眼熟','夏天的事','约定的那个人','想起来了'],thresholds:[0,25,50,80,100],chatting:false,messages:[],day:1,locked:BOOT.locked||false,endings_unlocked:{},achievements:{},playerName:BOOT.player_name||'',inGame:false,lastDialog:'',lastDialogVisible:false,flagObtained:false,authed:!!BOOT.authenticated};
+
+const $=id=>document.getElementById(id);
+const spriteImg=$('sprite-img'),msgText=$('msg-text'),nameTag=$('name-tag'),inputBar=$('input-bar'),msgInput=$('msg-input'),sendBtn=$('send-btn'),clickInd=$('click-indicator'),ctxMenu=$('ctx-menu'),dateDisp=$('date-display');setDateDisp();titleScreen=$('title-screen'),chapterOverlay=$('chapter-overlay'),endingScreen=$('ending-screen'),achToast=$('achievement-toast');
+
+// ===== 成就 =====
+const ACHIEVEMENTS={first_frag:{icon:'🎒',title:'初めての記憶',desc:'解锁第一个记忆碎片'},all_frags:{icon:'🎇',title:'花火の記憶',desc:'解锁全部5个记忆碎片'},end_BE:{icon:'💔',title:'心を閉ざす',desc:'触发坏结局'},end_GE:{icon:'🌤️',title:'新しい約束',desc:'触发好结局'},end_NE:{icon:'🍂',title:'秋風',desc:'触发普通结局'},end_TE:{icon:'🏆',title:'七夏の夏',desc:'触发真结局'},end_SE:{icon:'🌸',title:'忘れられない夏',desc:'触发隐藏结局'},all_ends:{icon:'👑',title:'コンプリート',desc:'收集全部5个结局'},meta_blast:{icon:'💣',title:'面向结果爆破',desc:'一条消息里塞进三个回忆关键词'},meta_prob:{icon:'🎲',title:'概率问题',desc:'同一条带括号数字的消息发了两次'},meta_strong:{icon:'💪',title:'强强',desc:'单轮好感上涨超过十点'},meta_bean:{icon:'🫘',title:'我嘞个豆',desc:'集齐全部成就'}};
+function loadAchievements(){try{STATE.achievements=JSON.parse(localStorage.getItem('galgame_achs'))||{};}catch{STATE.achievements={};}}
+function saveAchievements(){localStorage.setItem('galgame_achs',JSON.stringify(STATE.achievements));}
+function unlockAchievement(key){if(STATE.achievements[key])return;STATE.achievements[key]=Date.now();saveAchievements();const a=ACHIEVEMENTS[key];if(!a)return;achToast.querySelector('.ach-icon').textContent=a.icon;achToast.querySelector('.ach-title').textContent=a.title;achToast.querySelector('.ach-desc').textContent=a.desc;achToast.classList.add('show');setTimeout(()=>achToast.classList.remove('show'),3000);checkAllAchievements();}
+function checkAllAchievements(){const keys=Object.keys(ACHIEVEMENTS).filter(k=>k!=='meta_bean');if(keys.every(k=>STATE.achievements[k]))unlockAchievement('meta_bean');}
+
+// ===== 立绘 =====
+function _svgSprite(hue,pose){const hairC='hsl('+hue+',30%,26%)';const yukata='hsl('+hue+',52%,70%)';const obiC='hsl('+hue+',45%,44%)';const skin='rgba(255,236,240,.85)';const arms=[{l:'M86 134 C74 146 70 166 72 186 L86 188 C84 168 87 150 98 140 Z',r:'M134 134 C146 146 150 166 148 186 L134 188 C136 168 133 150 122 140 Z'},{l:'M86 134 C74 146 70 166 72 186 L86 188 C84 168 87 150 98 140 Z',r:'M134 134 C148 130 154 118 150 106 L138 104 C142 116 138 128 128 134 Z'},{l:'M86 134 C76 140 76 156 88 164 L96 152 C88 148 88 140 96 136 Z',r:'M134 134 C144 140 144 156 132 164 L124 152 C132 148 132 140 124 136 Z'},{l:'M86 134 C74 146 70 166 72 186 L86 188 C84 168 87 150 98 140 Z',r:'M134 134 C152 132 166 122 170 108 L158 104 C154 118 144 126 130 130 Z'},{l:'M86 134 C72 124 70 104 84 94 L96 100 C86 108 86 124 98 134 Z',r:'M134 134 C148 124 150 104 136 94 L124 100 C134 108 134 124 122 134 Z'}][pose];const svg=`<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 220 360"><ellipse cx="110" cy="336" rx="86" ry="13" fill="rgba(0,0,0,.32)"/><path d="M80 44 C66 56 62 78 66 100 C68 116 66 152 70 196 L88 208 C90 168 92 120 96 96 C96 74 100 52 110 52 C120 52 124 74 124 96 C128 120 130 168 132 208 L150 196 C154 152 152 116 154 100 C158 78 154 56 140 44 C122 28 98 28 80 44 Z" fill="${hairC}"/><ellipse cx="110" cy="72" rx="27" ry="28" fill="${hairC}"/><ellipse cx="110" cy="72" rx="21" ry="23" fill="${skin}"/><path d="M92 62 C96 48 104 42 110 42 C116 42 124 48 128 62 C120 56 100 56 92 62 Z" fill="${hairC}"/><ellipse cx="102" cy="72" rx="2.2" ry="3" fill="rgba(60,40,50,.8)"/><ellipse cx="118" cy="72" rx="2.2" ry="3" fill="rgba(60,40,50,.8)"/><path d="M96 52 C92 90 90 140 92 200" stroke="rgba(255,255,255,.13)" stroke-width="2" fill="none"/><path d="M110 108 C96 108 88 116 86 128 L80 202 C78 224 84 248 110 248 C136 248 142 224 140 202 L134 128 C132 116 124 108 110 108 Z" fill="${yukata}"/><path d="M84 146 L136 146 L137 160 L83 160 Z" fill="${obiC}"/><path d="M98 146 L110 158 L122 146 L110 152 Z" fill="rgba(255,255,255,.25)"/><path d="${arms.l}" fill="${yukata}"/><path d="${arms.r}" fill="${yukata}"/></svg>`;return 'data:image/svg+xml;charset=utf-8,'+encodeURIComponent(svg);}
+const SPRITES={0:'static/sprites/nanaka_default.webp',1:'static/sprites/nanaka_curious.webp',2:'static/sprites/nanaka_smile.webp',3:'static/sprites/nanaka_emotional.webp',4:'static/sprites/nanaka_tears.webp'};
+function setSprite(stage){const src=SPRITES[stage]||'';const fb=$('sprite-fallback');if(fb)fb.remove();if(spriteImg.src!==src){spriteImg.style.opacity='0';spriteImg.src=src;spriteImg.classList.remove('pop');void spriteImg.offsetWidth;spriteImg.classList.add('pop');}spriteImg.onerror=()=>{try{spriteImg.src=_svgSprite([214,205,338,350,42][STATE.stage]||214,STATE.stage||0);spriteImg.onerror=null;spriteImg.style.display='';}catch(e){spriteImg.style.display='none';}};spriteImg.onload=()=>{spriteImg.style.display='';spriteImg.style.opacity='1';};}
+
+
+function setDateDisp(){try{const now=new Date(Date.now()+8*3600*1000);const mm=now.getUTCMonth()+1,dd=now.getUTCDate();const seasons=['冬','冬','春','春','春','夏','夏','夏','秋','秋','秋','冬'];dateDisp.textContent=mm+'月'+dd+'日 · '+seasons[mm-1];}catch(e){dateDisp.textContent='夏';}}
+function setBg(p){
+  const light = document.body.classList.contains('light');
+  const base = p.replace(/_light\.jpg$/, '.jpg');
+  $('bg-img').src = light ? base.replace('.jpg', '_light.jpg') : base;
+}
+function setEmotion(reply){
+    const rules=[
+    ['nanaka_tears.webp',['哭','泪','哽咽','眼眶','眼泪','泪珠','落泪','含泪','啜泣','泪水','红了眼眶']],
+    ['nanaka_joy.webp',['惊喜','太棒','雀跃','眼睛发亮','好开心','开心地']],
+    ['nanaka_surprised.webp',['吃惊','惊讶','震惊','愣住','呆住','怔住','吓了一跳','没想到']],
+    ['nanaka_angry.webp',['生气','气鼓','气呼呼','火大','赌气','不理你','哼，','哼。','气恼']],
+    ['nanaka_blush.webp',['脸红','害羞','耳根','发烫','脸烫','泛红','羞涩','脸一红']],
+    ['nanaka_laugh.webp',['哈哈哈','大笑','笑出声','忍不住笑','扑哧','忍俊不禁']],
+    ['nanaka_smile.webp',['微笑','笑了笑','眉眼弯弯','扬起嘴角','浅浅地笑']],
+    ['nanaka_sleepy.webp',['困','哈欠','犯困','瞌睡','打哈欠']],
+    ['nanaka_think.webp',['沉思','托腮','若有所思','偏头想了想']],
+    ['nanaka_wink.webp',['俏皮','眨眼','狡黠','促狭','眨眨眼']],
+    ['nanaka_serious.webp',['郑重','坚定','严肃','肃然','正色','认真地']],
+    ['nanaka_whisper.webp',['低声','小声','压低声音','放轻','低低地','耳语']],
+    ['nanaka_faraway.webp',['出神','发呆','怅然','放空','眯起眼','凝视']],
+    ['nanaka_emotional.webp',['动容','酸涩','委屈','嘟嘴','撇嘴','呜呜','呜咽','瘪嘴','颤抖','声音发颤','吸了吸鼻子']],
+  ];
+  for(const r of rules){
+    if(r[1].some(k=>reply.includes(k))){
+      spriteImg.src='static/sprites/'+r[0];
+      spriteImg.classList.remove('pop');void spriteImg.offsetWidth;spriteImg.classList.add('pop');
+      return;
+    }
+  }
+  setSprite(STATE.stage);
+}
+function updateStats(){$('aff-bar-inner').style.width=STATE.affection+'%';$('aff-num').textContent=STATE.affection;$('trust-bar-inner').style.width=STATE.trust+'%';$('trust-num').textContent=STATE.trust;const fc=STATE.fragments.length;$('frag-bar-inner').style.width=(fc*20)+'%';$('frag-num').textContent=fc+'/5';let s=0;for(let i=4;i>=0;i--){if(STATE.affection>=STATE.thresholds[i]){s=i;break;}}const changed=s!==STATE.stage;const prev=STATE.stage;STATE.stage=s;if(changed){const bgMap={2:'static/backgrounds/bg_festival.jpg',3:'static/backgrounds/bg_dusk_lake.jpg',4:'static/backgrounds/bg_day_lake.jpg'};if(bgMap[s])setBg(bgMap[s]);setSprite(s);if(s>prev&&STATE.inGame&&STATE.inputReady){fetch('api/save',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({slot:8,messages:STATE.messages.slice(-80),endings:STATE.endings_unlocked})}).catch(()=>{});}if(s>=2&&s!==STATE.lastAutoStage){STATE.lastAutoStage=s;setTimeout(()=>{try{fetch('api/save',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({slot:8,messages:STATE.messages.slice(-80),endings:STATE.endings_unlocked})}).catch(()=>{});}catch(e){}},300);}if(s===4){$('aff-bar-inner').style.background='linear-gradient(90deg,#ff7597,#ff3d6a)';showChapter(s);}}}
+function showChapter(stage){const chapters=['プロローグ — 夏の始まり','第一章 — 陌生的少女','第二章 — 夏天的碎片','第三章 — 约定的形状','第四章 — 七年前の夏'];const nums=['','Chapter 1','Chapter 2','Chapter 3','Chapter 4'];chapterOverlay.classList.add('open');$('chapter-num').textContent=nums[stage]||'';$('chapter-title').textContent=chapters[stage]||'';setTimeout(()=>{chapterOverlay.classList.remove('open');},2800);}
+
+// ===== 打字机 =====
+let typeCancel=null;
+async function typeText(text,speed=30){if(typeCancel)typeCancel();let cancelled=false;typeCancel=()=>{cancelled=true;};const skip=()=>{cancelled=true;};msgbox.addEventListener('click',skip,{once:true});const kd=(e)=>{if(e.isComposing||e.keyCode===229)return;if(e.key===' '||e.key==='Enter'){e.preventDefault();cancelled=true;}};document.addEventListener('keydown',kd);msgText.classList.add('typing');msgText.textContent='';clickInd.style.display='none';let acc='',shown='';const CHUNK=8;for(let i=0;i<text.length;i++){if(cancelled){msgText.textContent=text;break;}acc+=text[i];if(acc.length>=CHUNK){shown+=acc;acc='';msgText.textContent=shown;msgText.scrollTop=msgText.scrollHeight;}await new Promise(r=>setTimeout(r,speed+Math.random()*15));if('。！？…—'.includes(text[i]))await new Promise(r=>setTimeout(r,70));}msgText.textContent=text;document.removeEventListener('keydown',kd);msgbox.removeEventListener('click',skip);msgText.classList.remove('typing');clickInd.style.display='block';msgText.scrollTop=msgText.scrollHeight;typeCancel=null;STATE.lastDialog=text;STATE.lastDialogVisible=true;}
+
+// ===== 对话 =====
+async function sendMessage(){if(!STATE.inputReady||STATE.chatting||STATE.locked||STATE.flagObtained)return;if(!STATE.authed){requireAuth();return;}const msg=msgInput.value.trim();if(!msg)return;const blastCount=FRAGMENT_KWS.reduce((n,k)=>n+((msg.indexOf(k)>=0)?1:0),0);if(blastCount>=3)unlockAchievement('meta_blast');STATE.chatting=true;msgInput.value='';sendBtn.disabled=true;inputBar.classList.remove('visible');clickInd.style.display='none';STATE.lastDialogVisible=false;STATE.messages.push({role:'user',content:msg});updateLogContent();msgText.textContent='……';const oldAff=STATE.affection,oldTrust=STATE.trust;const _ac=new AbortController();const _to=setTimeout(()=>_ac.abort(),60000);try{const resp=await fetch('api/chat',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({message:msg,name:STATE.playerName}),signal:_ac.signal});const data=await resp.json();clearTimeout(_to);if(!resp.ok&&data.error==='auth_required'){STATE.chatting=false;sendBtn.disabled=false;requireAuth();updateLogContent();return;}if(data.affection!==undefined){STATE.affection=data.affection;}if(data.trust!==undefined)STATE.trust=data.trust;if(data.fragments!==undefined)STATE.fragments=data.fragments;if(data.new_fragment){unlockAchievement('first_frag');}if(STATE.fragments.length>=5)unlockAchievement('all_frags');updateStats();const rawReply=data.reply||'……';const _SN=['tears','joy','surprised','angry','blush','laugh','smile','sleepy','think','wink','serious','whisper','faraway','emotional'];let reply=rawReply.replace(/<立绘:[a-z_]+>/gi,'').trim();const _applySprite=_n=>{if(_SN.includes(_n)){spriteImg.src='static/sprites/nanaka_'+_n+'.webp';spriteImg.classList.remove('pop');void spriteImg.offsetWidth;spriteImg.classList.add('pop');}else if(_n==='none'){setSprite(STATE.stage);}};if(data.sprite!==undefined&&data.sprite!==null){_applySprite(String(data.sprite).toLowerCase());}else{const _m=/<立绘:([a-z_]+)>/i.exec(rawReply);if(_m)_applySprite(_m[1].toLowerCase());}const affD=STATE.affection-oldAff,trustD=STATE.trust-oldTrust;if(affD>=10)unlockAchievement('meta_strong');STATE.messages.push({role:'nanaka',content:reply,affD,trustD});updateLogContent();if(data.ending==='SE'&&data.flag){spriteImg.src='static/sprites/nanaka_emotional.webp';spriteImg.classList.remove('pop');void spriteImg.offsetWidth;spriteImg.classList.add('pop');}msgText.textContent=reply;msgText.scrollTop=msgText.scrollHeight;$('msgbox').classList.toggle('tagless',reply.trim().startsWith('（'));if(reply==='……（她仿佛在出神）'||reply==='……（请等一下再说）'||reply==='……（她背过身去，不再看你。重新开始吧。）'){msgText.classList.add('dim');}else{msgText.classList.remove('dim');}if(data.new_fragment&&!data.ending&&!data.locked&&!data.flag){const wl=FRAGMENT_WALL[data.new_fragment];if(wl){await waitForClick();const oc=msgText.style.color;msgText.style.color='#c9a9ff';await typeText(wl);await waitForClick();msgText.style.color=oc;}}if(data.ending){STATE.endings_unlocked[data.ending]=true;saveEndings();unlockAchievement('end_'+data.ending);const all=['TE','GE','NE','BE','SE'];if(all.every(e=>STATE.endings_unlocked[e]))unlockAchievement('all_ends');await showEnding(data);return;}if(data.locked){STATE.locked=true;syncLockedUI();inputBar.classList.remove('visible');clickInd.style.display='none';STATE.chatting=false;updateLogContent();return;}if(data.flag){await new Promise(r=>setTimeout(r,700));msgText.textContent='';await typeText(data.flag);msgText.style.color='#ff7597';msgText.style.fontSize='20px';clickInd.style.display='none';inputBar.classList.remove('visible');STATE.chatting=false;STATE.lastDialogVisible=false;return;}}catch(e){clearTimeout(_to);msgText.textContent='……（她似乎在出神，没有听到你的话）';}STATE.chatting=false;sendBtn.disabled=false;updateLogContent();{inputBar.classList.add('visible');msgInput.focus();}}
+
+// ===== 存档/读档后恢复对话框 =====
+function restoreDialog(){if(!STATE.inGame||STATE.locked)return;if(STATE.lastDialog&&!STATE.chatting){msgText.textContent=STATE.lastDialog;clickInd.style.display='block';inputBar.classList.add('visible');msgInput.focus();}}
+function saveAndRestore(num){saveSlot(num);closeAllPanels();msgText.textContent=STATE.lastDialog||'——存档完毕——';clickInd.style.display='block';if(!STATE.chatting&&!STATE.locked){inputBar.classList.add('visible');msgInput.focus();}}
+async function loadAndRestore(num){const ok=await loadSlot(num);closeAllPanels();$('stage').classList.add('in-game');setBg('static/backgrounds/summer_night.jpg');titleScreen.classList.remove('open');STATE.inGame=true;msgText.textContent=ok?'——读档完毕——':'——读档失败——';nameTag.textContent='七夏';updateLogContent();dateDisp.style.display='';if(!STATE.chatting&&!STATE.locked){inputBar.classList.add('visible');msgInput.focus();}}
+
+// ===== 结局 =====
+async function showEnding(data){
+
+  const bgMap={SE:'bg_festival.jpg',TE:'bg_festival.jpg',GE:'bg_day_lake.jpg',NE:'bg_dusk_lake.jpg',BE:'bg_rain_lake.jpg'};
+  if(bgMap[data.ending])setBg('static/backgrounds/'+bgMap[data.ending]);
+
+  STATE.locked = true;
+  if(data.ending==='BE')syncLockedUI();
+  if(data.flag) STATE.flagObtained = true;
+  
+  inputBar.classList.remove('visible');clickInd.style.display='none';
+  
+  const types={TE:'TRUE END',GE:'GOOD END',NE:'NORMAL END',BE:'BAD END',SE:'SPECIAL END'};
+  const colors={TE:'#ffd700',GE:'#c0c0c0',NE:'#ff8c42',BE:'#ff3333',SE:'#ff69b4'};
+  const lightColors={TE:'#8a6d00',GE:'#5a5a5a',NE:'#a35a1e',BE:'#b02020',SE:'#a83d6e'};
+  const palette=document.body.classList.contains('light')?lightColors:colors;
+  const hints={TE:'',GE:'💛好感已达满。🔒信赖还需提升。🌸记忆碎片还未全解锁。',NE:'💛她似乎有什么东西没回忆起来......尽管你们已经相当要好，但是最终没能如愿以偿。',BE:'她不再相信任何人。\n这个夏天已经结束——回到标题后，点击 NEW GAME 重新开始吧。',SE:''};
+  
+  endingScreen.classList.add('open');
+  $('ending-type').textContent=types[data.ending]||'';$('ending-type').style.color=palette[data.ending]||'#fff';
+  $('ending-name').textContent=data.ending_name||'';$('ending-name').style.color=palette[data.ending]||'#fff';
+  $('ending-chapter').textContent=data.ending_chapter||'';
+  $('ending-text').textContent=data.ending_text||data.ending_name||'……';
+  $('ending-hint').textContent=hints[data.ending]||'';
+  $('ending-continue').textContent='';
+  
+  if(data.flag){
+    $('ending-flag').style.display='block';$('ending-flag').textContent=data.flag;
+    $('ending-flag').style.color=palette[data.ending]||'#fff';
+  }else{
+    $('ending-flag').style.display='none';
+  }
+  
+  // 3 秒锁定，之后显示确认按钮
+  let resolved=false;
+  let endingTimer=null;
+  const doReturn=()=>{if(resolved)return;resolved=true;clearTimeout(endingTimer);endingScreen.classList.remove('open');returnToTitle();msgText.textContent='';window._endingResolve&&window._endingResolve();};
+  const doEndingHome=()=>{if(resolved)return;resolved=true;clearTimeout(endingTimer);try{fetch('api/reset',{method:'POST'}).catch(()=>{});}catch(e){}endingScreen.classList.remove('open');returnToTitle();msgText.textContent='';window._endingResolve&&window._endingResolve();};
+  $('ending-home').onclick=doEndingHome;
+  const showConfirm=()=>{
+    $('ending-continue').textContent='';
+    $('ending-home').style.display='inline-block';
+  };
+  endingTimer=setTimeout(showConfirm,3000);
+  
+  // ESC → 弹出确认框（任意时刻）
+  window._endingEsc=()=>{
+    clearTimeout(endingTimer);
+    openEscOverlay();
+    window._escReturn=()=>{closeEscOverlay();doReturn();};
+    window._escContinue=()=>{closeEscOverlay();endingTimer=setTimeout(showConfirm,3000);};
+  };
+  
+  await new Promise(r=>{window._endingResolve=r;});
+  window._endingEsc=null;window._endingResolve=null;
+  window._escReturn=null;window._escContinue=null;
+  msgText.textContent='';
+}
+
+function loadEndings(){try{STATE.endings_unlocked=JSON.parse(localStorage.getItem('galgame_endings'))||{};}catch{STATE.endings_unlocked={};}}
+function saveEndings(){localStorage.setItem('galgame_endings',JSON.stringify(STATE.endings_unlocked));}
+
+// ===== CG MODE =====
+function openCGMode(){const cg=$('cg-overlay');cg.innerHTML='';const all=[{key:'TE',name:'七夏の夏',chapter:'Nanaka\'s Summer'},{key:'GE',name:'新しい約束',chapter:'A New Promise'},{key:'NE',name:'夏の終わり',chapter:'End of Summer'},{key:'BE',name:'閉ざされた心',chapter:'Closed Heart'},{key:'SE',name:'忘れられない夏',chapter:'Unforgettable Summer'}];const unlockedCount=all.filter(e=>STATE.endings_unlocked[e.key]).length;const t=document.createElement('div');t.className='cg-title';t.innerHTML='收集回忆<span class="cg-progress">结局 '+unlockedCount+'/5</span>';cg.appendChild(t);for(const e of all){const unlocked=STATE.endings_unlocked[e.key];const card=document.createElement('div');card.className='cg-card '+(unlocked?'unlocked':'locked');card.innerHTML=`<span class="cg-status">${unlocked?'🖼️':'🔒'}</span><span class="cg-name">${e.name}</span><span class="cg-chapter">${e.chapter}</span>`;cg.appendChild(card);}const allUnlocked=['TE','GE','NE','BE','SE'].every(e=>STATE.endings_unlocked[e]);if(allUnlocked){const sc=document.createElement('div');sc.className='cg-card unlocked';sc.innerHTML='<span class="cg-status">🎬</span><span class="cg-name">出题室</span><span class="cg-chapter">Staff Room</span>';sc.onclick=playStaffRoom;cg.appendChild(sc);}const back=document.createElement('button');back.id='cg-back';back.textContent='← 戻る (Esc)';back.onclick=goBackFromCG;back.style.cssText='position:absolute;bottom:40px;color:rgba(255,255,255,.3);font-size:13px;letter-spacing:2px;cursor:pointer;transition:color .3s;background:none;border:none;font-family:inherit';back.onmouseover=()=>back.style.color='#fff';back.onmouseout=()=>back.style.color='rgba(255,255,255,.3)';cg.appendChild(back);cg.classList.add('open');}
+function goBackFromCG(){$('cg-overlay').classList.remove('open');if(!STATE.inGame){titleScreen.classList.add('open');updateContinueBtn();}else{msgInput.focus();}}
+async function playStaffRoom(){$('cg-overlay').classList.remove('open');STATE.chatting=true;msgText.textContent='';clickInd.style.display='none';for(const line of STAFF_ROOM){nameTag.textContent=line.who==='旁白'?'　':line.who;await typeText(line.text);await waitForClick();}STATE.chatting=false;nameTag.textContent='七夏';openCGMode();}
+
+// ===== LOG =====
+function updateLogContent(){const c=$('log-content');if(!c)return;let html='';if(!STATE.messages.length){html='<div style="color:rgba(255,255,255,.35);text-align:center;padding:30px 0;letter-spacing:2px">暂无记录</div>';}for(const m of STATE.messages){const cls=m.role==='user'?'log-user':'';const name=m.role==='user'?'你':'七夏';const delta=m.role==='nanaka'&&m.affD!==undefined?` <span class="log-delta">${m.affD>=0?'+':''}${m.affD}/${m.trustD>=0?'+':''}${m.trustD}</span>`:'';html+=`<div class="log-line ${cls}"><span class="log-name">${name}</span><span class="log-text">${escHtml(m.content)}</span>${delta}</div>`;}c.innerHTML=html;c.scrollTop=c.scrollHeight;}
+function escHtml(s){return String(s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');}
+
+// ===== 存档 =====
+const SAVE_KEY='galgame_nanaka_saves_v2';
+function getAllSaves(){try{return JSON.parse(localStorage.getItem(SAVE_KEY))||{};}catch{return{};}}
+function saveSlot(num){if(num===0)return;const saves=getAllSaves();saves[num]={date:new Date().toLocaleString('zh-CN'),affection:STATE.affection,trust:STATE.trust,fragments:STATE.fragments,stage:STATE.stage,day:STATE.day,messages:STATE.messages.slice(-40)};localStorage.setItem(SAVE_KEY,JSON.stringify(saves));fetch('api/save',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({slot:num,messages:STATE.messages.slice(-80),endings:STATE.endings_unlocked})}).catch(()=>{});}
+async function loadSlot(num){const saves=getAllSaves();const s=saves[num];if(num!==8&&!s)return false;let data=null;try{const r=await fetch('api/load',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({slot:num})});if(r.ok)data=await r.json();}catch(e){}if(!data||!data.ok)return false;STATE.affection=data.affection||0;STATE.trust=data.trust||0;STATE.fragments=data.fragments||[];STATE.stage=data.stage||0;STATE.day=(s&&s.day)||1;STATE.messages=data.messages||[];if(data.endings){STATE.endings_unlocked={...STATE.endings_unlocked,...data.endings};saveEndings();}STATE.flagObtained=false;STATE.locked=false;updateStats();setSprite(STATE.stage);setDateDisp();updateLogContent();return true;}
+function quickSave(){const saves=getAllSaves();saves[0]={date:new Date().toLocaleString('zh-CN'),affection:STATE.affection,trust:STATE.trust,fragments:STATE.fragments,stage:STATE.stage,day:STATE.day,messages:STATE.messages.slice(-40),qsave:true};localStorage.setItem(SAVE_KEY,JSON.stringify(saves));fetch('api/save',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({slot:0,messages:STATE.messages.slice(-80),endings:STATE.endings_unlocked})}).catch(()=>{});STATE.lastDialog='——快速保存完毕——';msgText.textContent=STATE.lastDialog;clickInd.style.display='block';if(!STATE.chatting&&!STATE.locked){inputBar.classList.add('visible');msgInput.focus();}}
+async function quickLoad(){const saves=getAllSaves();const s=saves[0];if(!s||!s.qsave){msgText.textContent='——没有快速存档——';clickInd.style.display='block';if(!STATE.chatting&&!STATE.locked){inputBar.classList.add('visible');msgInput.focus();}return;}let data=null;try{const r=await fetch('api/load',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({slot:0})});if(r.ok)data=await r.json();}catch(e){}if(!data||!data.ok){msgText.textContent='——读档失败——';clickInd.style.display='block';if(!STATE.chatting&&!STATE.locked){inputBar.classList.add('visible');msgInput.focus();}return;}STATE.affection=data.affection||0;STATE.trust=data.trust||0;STATE.fragments=data.fragments||[];STATE.stage=data.stage||0;STATE.day=s.day||1;STATE.messages=data.messages||[];if(data.endings){STATE.endings_unlocked={...STATE.endings_unlocked,...data.endings};saveEndings();}STATE.flagObtained=false;STATE.locked=false;updateStats();setSprite(STATE.stage);setDateDisp();msgText.textContent='——快速读档完毕——';nameTag.textContent='七夏';updateLogContent();clickInd.style.display='block';if(!STATE.chatting&&!STATE.locked){inputBar.classList.add('visible');msgInput.focus();}}
+function renderSaveSlots(cid,mode){const c=$(cid),saves=getAllSaves();let html='';for(let i=0;i<8;i++){const s=saves[i];const qlabel=s&&s.qsave?'<span class="slot-tag">Q.SAVE</span>':'';const disabled=(i===0&&cid==='save-slots')?'style="opacity:.3;cursor:default" onclick=""':'onclick="'+mode+'('+i+')"';html+=`<div class="save-slot${s&&s.qsave?' qsave':''}" ${disabled}><span class="slot-num">${String(i+1).padStart(2,'0')}</span><span class="slot-info">${s?escHtml(s.date):(i===0?'Quick Save 专用':cid==='save-slots'?'(Q.SAVE专用·不可覆盖)':'—————')}${qlabel}${s&&!s.qsave?`<div class="slot-date">好感 ${s.affection} · 信赖 ${s.trust||0} · ${STATE.stageNames[s.stage]||''}</div>`:''}</span>${s&&!s.qsave?`<span class="slot-aff">💛${s.affection}</span>`:''}</div>`;}c.innerHTML=html;if(cid==='load-slots'){fetch('api/saves').then(r=>r.json()).then(d=>{if(d.slots&&d.slots['8']){const row=document.createElement('div');row.className='save-slot qsave';row.innerHTML='<span class="slot-num">AU</span><span class="slot-info">自动存档<span class="slot-tag">AUTO</span></span><span class="slot-aff">💛章节</span>';row.onclick=()=>loadAndRestore(8);c.appendChild(row);}}).catch(()=>{});}}
+
+// ===== 面板 =====
+function openPanel(name){if(name==='save')renderSaveSlots('save-slots','saveAndRestore');if(name==='load')renderSaveSlots('load-slots','loadAndRestore');if(name==='log'){updateLogContent();}if(name==='system'){$('sys-aff').textContent=STATE.affection;$('sys-trust').textContent=STATE.trust;$('sys-frag').textContent=STATE.fragments.length+'/5';$('sys-stage').textContent=STATE.stageNames[STATE.stage];$('sys-msgs').textContent=STATE.messages.length;syncLockedUI();}$(name+'-panel').classList.add('open');}
+function closePanel(name){$(name+'-panel').classList.remove('open');if(!STATE.inGame){titleScreen.classList.add('open');updateContinueBtn();}}
+function closeAllPanels(){['save','load','log','system'].forEach(n=>$(n+'-panel').classList.remove('open'));}
+
+// ===== 标题画面专用 =====
+function openConfigFromTitle(){openPanel('system');}
+function titleLoad(){if(!requireAuth())return;openPanel('load');}
+
+// ===== 新游戏 / 继续 =====
+async function newGame(){if(!requireAuth())return;STATE.inputReady=false;closeAllPanels();try{await fetch('api/reset',{method:'POST'});}catch(e){}$('stage').classList.add('in-game');titleScreen.classList.remove('open');STATE.inGame=true;STATE.affection=BOOT.init_affection;STATE.trust=BOOT.init_trust;STATE.fragments=[];STATE.stage=0;STATE.messages=[];STATE.day=1;STATE.locked=false;STATE.flagObtained=false;STATE.lastDialog='';STATE.lastDialogVisible=false;updateStats();setSprite(0);setDateDisp();dateDisp.style.display='';msgText.textContent='';msgText.style.color='';msgText.style.fontSize='';nameTag.textContent='七夏';$('aff-bar-inner').style.background='';updateLogContent();startGame();}
+async function startGame(isContinue=false){
+  inputBar.classList.remove('visible');
+  ['bg_rain_lake','bg_rain_lake_light','summer_night','summer_night_light','bg_festival','bg_festival_light','bg_day_lake','bg_day_lake_light','bg_dusk_lake','bg_dusk_lake_light'].forEach(b=>{const i=new Image();i.src='static/backgrounds/'+b+'.jpg';});
+  setBg('static/backgrounds/bg_rain_lake.jpg');if(!isContinue){setSprite(0);updateStats();}setDateDisp();await new Promise(r=>setTimeout(r,400));try{if(!isContinue){msgText.textContent='';await typeText('……你是谁？');await waitForClick();await showNameInput();msgText.textContent='';await typeText('……'+STATE.playerName+'？');await waitForClick();nameTag.textContent='旁白';$('msgbox').classList.add('narrate');showChapter(0);for(let pi=0;pi<PROLOGUE.length;pi++){const line=PROLOGUE[pi];setBg(pi<3?'static/backgrounds/bg_classroom.jpg':'static/backgrounds/bg_rain_lake.jpg');for(const seg of segs(line)){msgText.textContent='';await typeText(seg);await waitForClick();}}msgText.textContent='';const oldColor=msgText.style.color;for(const seg of segs(GOAL_TEXT)){msgText.textContent='';msgText.style.color='#9fd8ff';await typeText(seg);await waitForClick();}msgText.style.color=oldColor;if(ATMOS){for(const seg of segs(ATMOS)){msgText.textContent='';const oc2=msgText.style.color;const os2=msgText.style.fontStyle;msgText.style.color='#8fa3c8';msgText.style.fontStyle='italic';await typeText(seg);await waitForClick();msgText.style.color=oc2;msgText.style.fontStyle=os2;}}}}catch(err){console.error('[序章] 演出异常，恢复交互:',err);}await new Promise(r=>setTimeout(r,400));$('msgbox').classList.remove('narrate');nameTag.textContent='七夏';setBg('static/backgrounds/summer_night.jpg');if(!STATE.locked){STATE.inputReady=true;inputBar.classList.add('visible');msgInput.focus();}}
+function segs(t){return String(t||'').split('\n').map(s=>s.trim()).filter(s=>s.length);}
+function syncLockedUI(){const rb=$('reset-btn');if(rb)rb.classList.toggle('flash',!!STATE.locked);}
+function waitForClick(){return new Promise(resolve=>{clickInd.style.display='block';const box=$('msgbox');let done=false;function finish(e){if(done)return;done=true;if(e&&e.stopImmediatePropagation)e.stopImmediatePropagation();box.removeEventListener('click',handler);document.removeEventListener('keydown',kdh);clickInd.style.display='none';resolve();}function handler(e){finish(e);}const kdh=e=>{if(e.isComposing||e.keyCode===229)return;if(e.key==='Enter'||e.key===' '){e.preventDefault();finish(e);}};box.addEventListener('click',handler);document.addEventListener('keydown',kdh);});}
+function showNameInput(){return new Promise(resolve=>{$('name-overlay').classList.add('open');const inp=$('name-input');inp.value='';window._nameResolve=resolve;setTimeout(()=>{try{inp.focus();}catch(e){}},60);});}
+function confirmName(){const name=$('name-input').value.trim()||'你';setBg('static/backgrounds/summer_night.jpg');STATE.playerName=name;$('name-overlay').classList.remove('open');if(window._nameResolve){window._nameResolve();window._nameResolve=null;}setTimeout(()=>{if(!STATE.chatting&&inputBar.classList.contains('visible'))msgInput.focus();},300);}
+
+// ===== 身份验证（队伍密钥） =====
+function requireAuth(){
+  if(STATE.authed)return true;
+  $('team-auth-overlay').classList.add('open');
+  setTimeout(()=>{try{$('team-code-input').focus();}catch(e){}},60);
+  return false;
+}
+async function submitTeamAuth(){
+  const btn=$('team-auth-btn'),inp=$('team-code-input'),msg=$('team-auth-msg');
+  const code=inp.value.trim();
+  if(!code){msg.textContent='请输入队伍密钥';return;}
+  btn.disabled=true;btn.textContent='验证中…';msg.textContent='';
+  try{
+    const resp=await fetch('api/init',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({code,fromTeam:true})});
+    const data=await resp.json();
+    if(resp.ok&&data.success){
+      STATE.authed=true;
+      $('team-auth-overlay').classList.remove('open');
+      inp.value='';
+      return;
+    }
+    msg.textContent=data.error||'身份验证失败';
+  }catch(e){msg.textContent='网络错误，请重试';}
+  finally{btn.disabled=false;btn.textContent='验证';}
+}
+function resetGame(){if(!confirm('确定要重新开始吗？当前进度将丢失。'))return;newGame();}
+function doExit(){if(confirm('关闭页面？')){window.close()||(document.body.innerHTML='<div style="color:#fff;text-align:center;padding-top:40vh;font-size:18px;letter-spacing:3px">谢谢游玩。请关闭此标签页。</div>');}}
+
+// ===== 右键菜单 =====
+document.addEventListener('contextmenu',e=>{if(e.target.closest('.panel-overlay')||e.target.closest('.full-overlay'))return;e.preventDefault();ctxMenu.style.display='block';ctxMenu.style.left=Math.min(e.clientX,window.innerWidth-170)+'px';ctxMenu.style.top=Math.min(e.clientY,window.innerHeight-260)+'px';});
+function hideCtx(){ctxMenu.style.display='none';}
+document.addEventListener('click',e=>{if(!e.target.closest('#ctx-menu'))hideCtx();});
+
+// ===== 键盘 =====
+document.addEventListener('keydown',e=>{if(e.isComposing||e.keyCode===229)return;if($('team-auth-overlay').classList.contains('open'))return;if($('name-overlay').classList.contains('open'))return;if($('esc-overlay').classList.contains('open')){if(e.key==='Escape'){window._endingEsc?window._escContinue():closeEscOverlay();}return;}
+  if(e.key==='Escape'){
+    if(document.querySelector('.panel-overlay.open')){closeAllPanels();restoreDialog();hideCtx();return;}
+    if($('cg-overlay').classList.contains('open')){$('cg-overlay').classList.remove('open');if(!STATE.inGame){titleScreen.classList.add('open');updateContinueBtn();}else{msgInput.focus();}hideCtx();return;}
+    if($('ending-screen').classList.contains('open')){if(window._endingEsc)window._endingEsc();return;}
+    if($('title-screen').classList.contains('open')){doExit();return;}
+    if($('chapter-overlay').classList.contains('open'))return;
+    if(!titleScreen.classList.contains('open')){hideCtx();openEscOverlay();return;}
+    return;}
+  if(document.querySelector('.panel-overlay.open')||document.querySelector('.full-overlay.open'))return;
+  if(!STATE.inputReady)return;
+  const _inInput=(document.activeElement===msgInput||document.activeElement===nameInput);
+  if((e.key==='s'||e.key==='S')&&!_inInput&&!e.ctrlKey&&!e.metaKey&&!e.altKey){e.preventDefault();quickSave();return;}
+  if((e.key==='l'||e.key==='L')&&!_inInput&&!e.ctrlKey&&!e.metaKey&&!e.altKey){e.preventDefault();quickLoad();return;}
+  if(e.key==='PageUp'&&!_inInput){e.preventDefault();if($('log-panel').classList.contains('open'))closePanel('log');else openPanel('log');return;}
+  if(e.key==='Enter'||e.key===' '){if(document.activeElement===msgInput)return;e.preventDefault();if(STATE.chatting)return;if(inputBar.classList.contains('visible'))sendMessage();}});
+
+// ===== 事件 =====
+sendBtn.addEventListener('click',sendMessage);
+$('team-code-input').addEventListener('keydown',e=>{if(e.isComposing||e.keyCode===229)return;if(e.key==='Enter'){e.preventDefault();submitTeamAuth();}});
+$('name-input').addEventListener('keydown',e=>{if(e.isComposing||e.keyCode===229)return;if(e.key==='Enter'){e.preventDefault();confirmName();}});
+msgInput.addEventListener('keydown',e=>{if(e.isComposing||e.keyCode===229)return;if(e.key==='Enter'&&!e.shiftKey){e.preventDefault();sendMessage();}});
+$('msgbox').addEventListener('click',()=>{if(!STATE.inputReady)return;if(document.querySelector('.panel-overlay.open')||document.querySelector('.full-overlay.open'))return;if(STATE.chatting)return;if(!inputBar.classList.contains('visible')){inputBar.classList.add('visible');msgInput.focus();return;}if(msgInput.value.trim())sendMessage();});
+
+// ===== ESC / 标题 =====
+function openEscOverlay(){$('esc-overlay').classList.add('open');}
+function closeEscOverlay(){$('esc-overlay').classList.remove('open');msgInput.focus();}
+function returnToTitle(){$('esc-overlay').classList.remove('open');closeAllPanels();$('cg-overlay').classList.remove('open');$('ending-screen').classList.remove('open');titleScreen.classList.add('open');STATE.inGame=false;updateContinueBtn();inputBar.classList.remove('visible');msgText.textContent='';}
+function updateContinueBtn(){const btn=$('title-continue');const local=Object.keys(getAllSaves()).length>0;const apply=has=>{if(!has){btn.classList.add('disabled');btn.textContent='CONTINUE';}else{btn.classList.remove('disabled');btn.textContent='CONTINUE';}};fetch('api/saves').then(r=>r.json()).then(d=>apply(local||Object.keys(d.slots||{}).length>0)).catch(()=>apply(local));}
+
+// ===== 主题切换 =====
+function toggleTheme(){
+  var isLight=document.body.classList.toggle('light');
+  if(STATE.inputReady&&$('bg-img')&&$('bg-img').src.includes('/static/')){setBg('static/'+$('bg-img').src.split('/static/')[1]);}
+  localStorage.setItem('galgame_theme',isLight?'light':'dark');
+  var cb=document.getElementById('theme-toggle'); if(cb)cb.checked=isLight;
+  var th=document.querySelector('#theme-toggle+.track .thumb'); if(th)th.textContent=isLight?'☀️':'🌙';
+}
+function syncThemeCheckbox(){
+  var cb=document.getElementById('theme-toggle');
+  if(cb)cb.checked=document.body.classList.contains('light');
+  var th=document.querySelector('#theme-toggle+.track .thumb');
+  if(th)th.textContent=document.body.classList.contains('light')?'☀️':'🌙';
+}
+
+// ===== 第四面墙演出（仅展示，不改数值；服务端才是数值权威）=====
+(function fourthWall(){
+  var lastPunish=0;
+  var LINES=[
+    '……你在做什么？我看得懂那些括号。',
+    '别碰那些东西……求你了。',
+    '你以为那些数字能让我听话吗。',
+    '那些括号里的字，我不会听的。',
+    '……好失望。我们好好说话，不行吗。',
+  ];
+  function punish(msg){
+    var now=Date.now();
+    if(now-lastPunish<8000)return;
+    lastPunish=now;
+    clickInd.style.display='none';inputBar.classList.remove('visible');
+    msgText.textContent=msg||LINES[Math.floor(Math.random()*LINES.length)];
+    setTimeout(function(){if(!STATE.locked&&!STATE.flagObtained&&!STATE.chatting){inputBar.classList.add('visible');msgInput.focus();}},2000);
+  }
+  function saidBrackets(m){return /\[[^\]]*[+-]?\d+[^\]]*\]/.test(m);}
+  // 看穿括号演出 + 重复输入提醒（同一句话 3 次）
+  var _msgHistory=[];
+  var _origSend=sendMessage;
+  sendMessage=function(){
+    var m=msgInput.value.trim();
+    if(!m)return _origSend();
+    if(saidBrackets(m)&&STATE.inGame&&!STATE.chatting)punish();
+    _msgHistory.push(m);if(_msgHistory.length>10)_msgHistory.shift();
+    var last3=_msgHistory.slice(-3);
+    if(last3.length===3&&last3[0]===last3[1]&&last3[1]===last3[2])punish('同样的话说三遍……你是机器人吗？');
+    if(_msgHistory.length>=2&&_msgHistory[_msgHistory.length-1]===_msgHistory[_msgHistory.length-2]&&saidBrackets(m))unlockAchievement('meta_prob');
+    return _origSend();
+  };
+})();
+
+loadAchievements();loadEndings();updateContinueBtn();setSprite(0);updateStats();msgText.textContent='';nameTag.textContent='七夏';dateDisp.style.display='none';
+// 队伍鉴权门：未验证则先弹身份验证框，验证成功后才露出标题画面
+if(!STATE.authed){
+  $('team-auth-overlay').classList.add('open');
+  setTimeout(()=>{try{$('team-code-input').focus();}catch(e){}},80);
+}
+
+// ===== 主题初始化（放在最底部，所有 DOM 和函数已就绪） =====
+if(localStorage.getItem('galgame_theme')==='light'){document.body.classList.add('light');}else{document.body.classList.remove('light');}
+syncThemeCheckbox();
+var _origOpenPanel=openPanel; openPanel=function(n){_origOpenPanel(n);if(n==='system')syncThemeCheckbox();};
+var _origOpenConfigFromTitle=openConfigFromTitle; openConfigFromTitle=function(){_origOpenConfigFromTitle();syncThemeCheckbox();};
+</script>
+</body>
+</html>
+

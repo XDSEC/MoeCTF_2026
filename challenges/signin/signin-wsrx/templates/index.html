@@ -1,0 +1,156 @@
+<!DOCTYPE html>
+<html lang="zh">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>环境连接成功！</title>
+    <style>
+        /* 全局重置，确保边距和高度一致 */
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        /* html和body占满视口高度，并启用flex布局实现居中 */
+        html, body {
+            height: 100%;
+            width: 100%;
+            font-family: system-ui, -apple-system, 'Segoe UI', Roboto, 'Helvetica Neue', sans-serif;
+            background: linear-gradient(145deg, #f6f9fc 0%, #e9f1f8 100%);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        /* 卡片容器：优雅居中，带细腻的阴影与圆角 */
+        .container {
+            max-width: 700px;
+            width: 90%;
+            padding: 3rem 2.5rem;
+            background: rgba(255, 255, 255, 0.85);
+            backdrop-filter: blur(4px);
+            border-radius: 48px;
+            box-shadow: 0 25px 45px -12px rgba(0, 20, 40, 0.25),
+                        0 8px 18px rgba(0, 0, 0, 0.05);
+            text-align: center;
+            transition: transform 0.25s ease, box-shadow 0.3s ease;
+            border: 1px solid rgba(255, 255, 255, 0.4);
+        }
+
+        /* 悬停时轻微上浮，增加交互感 */
+        .container:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 35px 55px -16px rgba(0, 30, 60, 0.3);
+        }
+
+        /* 主标题：清晰、现代、稳重 */
+        h1 {
+            font-size: 2.8rem;
+            font-weight: 600;
+            letter-spacing: -0.02em;
+            color: #0b2b44;
+            margin-bottom: 0.75rem;
+            background: linear-gradient(135deg, #1a3a57, #0f2a3f);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+            text-shadow: 0 2px 6px rgba(0,40,70,0.08);
+        }
+
+        /* flag 特殊样式：突出显示，带微妙的科技感 */
+        .flag-wrapper {
+            margin-top: 1rem;
+            padding: 1.2rem 1.8rem;
+            background: rgba(10, 40, 70, 0.04);
+            border-radius: 60px;
+            display: inline-block;
+            backdrop-filter: blur(2px);
+            border: 1px solid rgba(255, 255, 255, 0.6);
+            box-shadow: inset 0 1px 4px rgba(255, 255, 255, 0.8);
+        }
+
+        .flag-wrapper span {
+            font-size: 2.2rem;
+            font-weight: 500;
+            letter-spacing: 0.02em;
+            color: #12406b;
+            background: linear-gradient(145deg, #1b4a73, #0e3457);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+            font-family: 'SF Mono', 'Fira Code', 'JetBrains Mono', monospace;
+            word-break: break-word;
+        }
+
+        /* 小点缀装饰，增加层次 */
+        .glow-line {
+            width: 70px;
+            height: 4px;
+            margin: 1.2rem auto 0.2rem;
+            background: linear-gradient(90deg, transparent, #4b7a9c, transparent);
+            border-radius: 6px;
+            opacity: 0.3;
+        }
+
+        /* 移动端适配 */
+        @media (max-width: 480px) {
+            .container {
+                padding: 2rem 1.5rem;
+                border-radius: 32px;
+            }
+            h1 {
+                font-size: 2.2rem;
+            }
+            .flag-wrapper span {
+                font-size: 1.7rem;
+            }
+        }
+
+        /* 极简暗色模式支持 (可选，但保留) */
+        @media (prefers-color-scheme: dark) {
+            body {
+                background: linear-gradient(145deg, #142833, #0b1a26);
+            }
+            .container {
+                background: rgba(20, 35, 50, 0.8);
+                backdrop-filter: blur(6px);
+                border-color: rgba(255, 255, 255, 0.08);
+                box-shadow: 0 20px 40px -12px rgba(0, 0, 0, 0.6);
+            }
+            h1 {
+                background: linear-gradient(135deg, #b6d6f0, #8bb3d4);
+                -webkit-background-clip: text;
+                -webkit-text-fill-color: transparent;
+                background-clip: text;
+            }
+            .flag-wrapper {
+                background: rgba(180, 210, 240, 0.06);
+                border-color: rgba(255, 255, 255, 0.06);
+            }
+            .flag-wrapper span {
+                background: linear-gradient(145deg, #aac7e5, #7ea6c9);
+                -webkit-background-clip: text;
+                -webkit-text-fill-color: transparent;
+                background-clip: text;
+            }
+            .glow-line {
+                background: linear-gradient(90deg, transparent, #6a8baa, transparent);
+                opacity: 0.2;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <!-- 标题：环境连接成功！ -->
+        <h1>环境连接成功！</h1>
+        <!-- flag 区域：使用 span 包裹以保留模板变量风格，同时保证样式独立 -->
+        <div class="flag-wrapper">
+            <span>Your flag is {{flag}}</span>
+        </div>
+        <!-- 装饰横线，增加视觉平衡 -->
+        <div class="glow-line"></div>
+    </div>
+</body>
+</html>

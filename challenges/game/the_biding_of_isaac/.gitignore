@@ -1,0 +1,8 @@
+.venv/
+__pycache__/
+data/game.db
+data/game.db-wal
+data/game.db-shm
+data/game.json
+data/game.json.bak
+*.log

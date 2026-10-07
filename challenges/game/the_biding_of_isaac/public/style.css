@@ -1,0 +1,803 @@
+* {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+}
+
+body {
+  font-family: "Segoe UI", "PingFang SC", "Microsoft YaHei", sans-serif;
+  background: #15111a;
+  color: #f0e9d8;
+  min-height: 100vh;
+}
+
+header {
+  text-align: center;
+  padding: 24px 16px 8px;
+}
+
+h1 {
+  font-size: 2.2rem;
+  letter-spacing: 2px;
+  color: #ffd76a;
+  text-shadow: 0 0 12px rgba(255, 215, 106, 0.35);
+}
+
+.subtitle {
+  margin-top: 4px;
+  color: #b9a98f;
+}
+
+.tabs {
+  display: flex;
+  justify-content: center;
+  gap: 10px;
+  padding: 16px;
+}
+
+.tab {
+  background: #241d2e;
+  color: #d8ccb8;
+  border: 1px solid #3d3048;
+  padding: 8px 18px;
+  border-radius: 8px;
+  cursor: pointer;
+  font-size: 15px;
+}
+
+.tab.active {
+  background: #6b3fa0;
+  color: #fff;
+  border-color: #9b6bd0;
+}
+
+main {
+  max-width: 960px;
+  margin: 0 auto;
+  padding: 0 16px 40px;
+}
+
+.panel {
+  display: none;
+}
+
+.panel.active {
+  display: block;
+}
+
+.hidden {
+  display: none !important;
+}
+
+.join-row {
+  display: flex;
+  gap: 8px;
+  flex-wrap: wrap;
+  margin: 16px 0;
+}
+
+input[type="text"],
+input[type="number"] {
+  background: #241d2e;
+  border: 1px solid #4d3b5c;
+  color: #f0e9d8;
+  padding: 10px 12px;
+  border-radius: 8px;
+  font-size: 16px;
+  outline: none;
+}
+
+input:focus {
+  border-color: #ffd76a;
+}
+
+button {
+  background: #3c2b4d;
+  border: 1px solid #5b4273;
+  color: #f0e9d8;
+  padding: 10px 16px;
+  border-radius: 8px;
+  cursor: pointer;
+  font-size: 15px;
+}
+
+button:hover {
+  filter: brightness(1.15);
+}
+
+button.primary {
+  background: #8c4fbf;
+  border-color: #b47ce0;
+}
+
+button.danger {
+  background: #7b2d3a;
+  border-color: #a74b5a;
+}
+
+.player-list {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.player-chip {
+  background: #2b2135;
+  border: 1px solid #4d3b5c;
+  border-radius: 999px;
+  padding: 6px 14px;
+  font-size: 14px;
+}
+
+.top-info {
+  display: flex;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  gap: 8px;
+  background: #241d2e;
+  border: 1px solid #3d3048;
+  border-radius: 10px;
+  padding: 12px 16px;
+  margin-bottom: 16px;
+}
+
+.item-card {
+  background: #2b2135;
+  border: 2px solid #6b3fa0;
+  border-radius: 12px;
+  padding: 18px;
+  margin-bottom: 16px;
+  text-align: center;
+}
+
+.item-card h3 {
+  color: #ffd76a;
+  font-size: 1.6rem;
+}
+
+.item-card .desc {
+  color: #cbbfa9;
+  margin-top: 6px;
+}
+
+.modifiers {
+  margin-top: 10px;
+  display: flex;
+  justify-content: center;
+  gap: 6px;
+  flex-wrap: wrap;
+}
+
+.modifier {
+  background: #503060;
+  border-radius: 999px;
+  padding: 4px 10px;
+  font-size: 13px;
+}
+
+/* --- 双道具卡片 --- */
+#item-cards {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 12px;
+  margin-bottom: 16px;
+}
+
+#item-cards .item-card {
+  cursor: pointer;
+  margin-bottom: 0;
+  transition: transform 0.12s ease, box-shadow 0.12s ease, border-color 0.12s ease;
+}
+
+#item-cards .item-card:hover {
+  transform: translateY(-2px);
+  border-color: #9b6bd0;
+}
+
+#item-cards .item-card.selected {
+  border-color: #ffd76a;
+  box-shadow: 0 0 0 2px rgba(255, 215, 106, 0.35), 0 0 18px rgba(255, 215, 106, 0.2);
+}
+
+.item-card .my-bid {
+  margin-top: 8px;
+  font-size: 0.9rem;
+  color: #ffd76a;
+}
+
+.item-card .my-bid.hint {
+  color: #a8d4ff;
+  opacity: 0.9;
+}
+
+.side-result {
+  margin-top: 18px;
+  border-top: 1px dashed #3d3048;
+  padding-top: 12px;
+}
+
+.side-result h4 {
+  color: #ffd76a;
+  margin-bottom: 4px;
+}
+
+.combined-box {
+  margin-top: 18px;
+  border-top: 1px dashed #3d3048;
+  padding-top: 12px;
+}
+
+.combined-box h4 {
+  color: #a8d4ff;
+  margin-bottom: 4px;
+}
+
+.combined-note {
+  color: #cbbfa9;
+  margin: 4px 0;
+}
+
+.combined-note b {
+  color: #ffd76a;
+}
+
+.bid-input-row {
+  display: flex;
+  gap: 8px;
+}
+
+#bid-input {
+  flex: 1;
+}
+
+#bid-status {
+  margin-top: 8px;
+  min-height: 20px;
+}
+
+.result-table {
+  width: 100%;
+  border-collapse: collapse;
+  margin-top: 12px;
+}
+
+.result-table th,
+.result-table td {
+  border: 1px solid #3d3048;
+  padding: 8px 10px;
+  text-align: center;
+}
+
+.result-table th {
+  background: #241d2e;
+}
+
+.winner-row {
+  background: rgba(255, 215, 106, 0.12);
+}
+
+.rank-table {
+  width: 100%;
+  border-collapse: collapse;
+  margin-top: 16px;
+}
+
+.rank-table th,
+.rank-table td {
+  border: 1px solid #3d3048;
+  padding: 10px;
+  text-align: center;
+}
+
+.rank-table th {
+  background: #241d2e;
+}
+
+.me-row {
+  background: rgba(255, 215, 106, 0.08);
+  box-shadow: inset 0 0 0 1px rgba(255, 215, 106, 0.3);
+}
+
+.vf-warn {
+  color: #ff9d9d;
+  font-weight: bold;
+}
+
+.history-item {
+  background: #241d2e;
+  border: 1px solid #3d3048;
+  border-radius: 10px;
+  padding: 12px 16px;
+  margin-bottom: 12px;
+}
+
+.history-title {
+  font-weight: bold;
+  color: #ffd76a;
+}
+
+.muted {
+  color: #9c8f7a;
+}
+
+.centered {
+  text-align: center;
+  margin: 20px 0;
+}
+
+/* --- 等待大厅 / 倒计时 --- */
+
+.countdown {
+  font-size: 1.9rem;
+  font-weight: bold;
+  color: #ffd76a;
+  text-shadow: 0 0 14px rgba(255, 215, 106, 0.35);
+  margin: 8px 0 2px;
+}
+
+.banner {
+  background: linear-gradient(135deg, #4a2c5c, #6b3fa0);
+  border: 1px solid #9b6bd0;
+  border-radius: 10px;
+  padding: 12px 16px;
+  margin: 10px 0;
+  color: #f0e9d8;
+  text-align: center;
+}
+
+/* --- 美术相关 --- */
+
+body {
+  background:
+    radial-gradient(circle at 15% 20%, rgba(120, 70, 160, 0.15), transparent 35%),
+    radial-gradient(circle at 85% 80%, rgba(255, 180, 60, 0.08), transparent 40%),
+    repeating-linear-gradient(45deg, rgba(255,255,255,0.015) 0 2px, transparent 2px 8px),
+    #15111a;
+}
+
+.item-icon {
+  font-size: 64px;
+  line-height: 1;
+  margin-bottom: 8px;
+  filter: drop-shadow(0 4px 8px rgba(0,0,0,0.5));
+}
+
+.item-card {
+  position: relative;
+  overflow: hidden;
+}
+
+.item-card::after {
+  content: "";
+  position: absolute;
+  inset: -40%;
+  background: radial-gradient(circle, rgba(255,215,106,0.12), transparent 60%);
+  pointer-events: none;
+}
+
+.top-info {
+  box-shadow: 0 4px 16px rgba(0,0,0,0.4);
+}
+
+.rank-table tr:hover,
+.result-table tr:hover {
+  background: rgba(255,255,255,0.04);
+}
+
+.winner-row {
+  box-shadow: inset 0 0 0 1px rgba(255,215,106,0.35);
+}
+
+.modifier {
+  background: linear-gradient(135deg, #4a2c5c, #6b3fa0);
+  border: 1px solid #9b6bd0;
+}
+
+.history-item {
+  box-shadow: 0 2px 10px rgba(0,0,0,0.3);
+}
+
+.logo {
+  width: 80px;
+  height: 80px;
+  border-radius: 18px;
+  box-shadow: 0 4px 20px rgba(0,0,0,0.5);
+  margin-bottom: 8px;
+}
+
+.item-card.rarity-rare {
+  border-color: #4fa3ff;
+  box-shadow: 0 0 18px rgba(79,163,255,0.25);
+}
+
+.item-card.rarity-cursed {
+  border-color: #ff5b6e;
+  box-shadow: 0 0 18px rgba(255,91,110,0.25);
+}
+
+.item-card.rarity-common {
+  border-color: #6b3fa0;
+}
+
+.rarity-badge {
+  display: inline-block;
+  font-size: 0.8rem;
+  padding: 2px 10px;
+  border-radius: 999px;
+  margin-bottom: 8px;
+  letter-spacing: 1px;
+}
+
+.rarity-badge-common {
+  color: #e6c8ff;
+  background: rgba(107, 63, 160, 0.25);
+  border: 1px solid #6b3fa0;
+}
+
+.rarity-badge-rare {
+  color: #a8d4ff;
+  background: rgba(79, 163, 255, 0.18);
+  border: 1px solid #4fa3ff;
+}
+
+.rarity-badge-cursed {
+  color: #ffc2ca;
+  background: rgba(255, 91, 110, 0.18);
+  border: 1px solid #ff5b6e;
+}
+
+/* --- 规则说明 --- */
+
+.rules-content {
+  background: #241d2e;
+  border: 1px solid #3d3048;
+  border-radius: 12px;
+  padding: 20px 24px;
+  line-height: 1.8;
+  color: #e5dccb;
+}
+
+.rules-content h3 {
+  color: #ffd76a;
+  margin: 20px 0 8px;
+  border-bottom: 1px solid #3d3048;
+  padding-bottom: 6px;
+}
+
+.rules-content h3:first-child {
+  margin-top: 0;
+}
+
+.rules-content h4 {
+  color: #ffd76a;
+  margin: 14px 0 6px;
+}
+
+.rules-content .rarity-legend {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 4px 18px;
+  padding-left: 0;
+  list-style: none;
+}
+
+.rarity-legend li {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.rarity-dot {
+  width: 10px;
+  height: 10px;
+  border-radius: 50%;
+  display: inline-block;
+  flex-shrink: 0;
+}
+
+.rarity-dot-common {
+  background: #6b3fa0;
+}
+
+.rarity-dot-rare {
+  background: #4fa3ff;
+}
+
+.rarity-dot-cursed {
+  background: #ff5b6e;
+}
+
+.rules-content ul,
+.rules-content ol {
+  margin-left: 20px;
+}
+
+.rules-content li {
+  margin: 6px 0;
+}
+
+.rules-content pre {
+  background: #15111a;
+  border: 1px solid #3d3048;
+  border-radius: 8px;
+  padding: 10px 12px;
+  color: #c9e4ff;
+  overflow-x: auto;
+}
+
+.rules-content table {
+  margin-top: 8px;
+  font-size: 14px;
+}
+
+/* 规则警示框：反转目标等需要玩家特别注意的规则 */
+.warn {
+  background: rgba(255, 91, 110, 0.12);
+  border: 1px solid #ff5b6e;
+  border-radius: 8px;
+  padding: 10px 12px;
+  margin: 10px 0;
+  color: #ffd0d6;
+}
+
+.warn code {
+  background: #15111a;
+  border-radius: 4px;
+  padding: 2px 6px;
+  color: #c9e4ff;
+}
+
+/* 对局中反转目标房间的实时提示 */
+#room-rule-hint {
+  background: rgba(255, 91, 110, 0.14);
+  border: 1px solid #ff5b6e;
+  border-radius: 8px;
+  padding: 10px 12px;
+  margin: 0 0 12px;
+  color: #ffd0d6;
+  font-size: 14px;
+}
+
+/* --- 鉴权 / FLAG --- */
+
+#auth-bar {
+  max-width: 960px;
+  margin: 0 auto;
+  padding: 0 16px 6px;
+  text-align: center;
+}
+
+#auth-status {
+  display: inline-block;
+  background: #241d2e;
+  border: 1px solid #3d3048;
+  border-radius: 999px;
+  padding: 6px 14px;
+  font-size: 14px;
+  color: #b9a98f;
+}
+
+#auth-login {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  align-items: center;
+}
+
+#auth-login label {
+  font-size: 13px;
+  color: #b9a98f;
+  letter-spacing: 0.08em;
+}
+
+.auth-code-row {
+  display: flex;
+  gap: 8px;
+  align-items: stretch;
+}
+
+#auth-code {
+  width: 280px;
+  font-family: ui-monospace, "Cascadia Code", Consolas, monospace;
+  font-size: 16px;
+  letter-spacing: 0.12em;
+  background: #1b1523;
+  border: 1px solid #4d3b5c;
+  color: #f0e9d8;
+  padding: 10px 14px;
+  border-radius: 10px;
+  outline: none;
+  box-shadow: inset 0 1px 3px rgba(0, 0, 0, 0.4);
+  transition: border-color 0.15s ease, box-shadow 0.15s ease;
+}
+
+#auth-code::placeholder {
+  letter-spacing: 0.02em;
+  color: #6f5d82;
+}
+
+#auth-code:focus {
+  border-color: #ffd76a;
+  box-shadow:
+    0 0 0 3px rgba(255, 215, 106, 0.18),
+    0 0 14px rgba(255, 215, 106, 0.28),
+    inset 0 1px 3px rgba(0, 0, 0, 0.4);
+}
+
+#auth-code:focus::placeholder {
+  color: transparent;
+}
+
+.join-hint {
+  font-size: 12px;
+  color: #7f708f;
+  margin: 0;
+}
+
+select {
+  background: #241d2e;
+  border: 1px solid #4d3b5c;
+  color: #f0e9d8;
+  padding: 10px 12px;
+  border-radius: 8px;
+  font-size: 15px;
+  outline: none;
+  cursor: pointer;
+}
+
+select:focus {
+  border-color: #ffd76a;
+}
+
+#flag-box {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-wrap: wrap;
+  gap: 10px;
+}
+
+#flag-box code {
+  background: #15111a;
+  border: 1px solid #9b6bd0;
+  border-radius: 8px;
+  padding: 8px 12px;
+  font-size: 15px;
+  color: #c9e4ff;
+  word-break: break-all;
+  user-select: all;
+}
+
+#flag-box button {
+  padding: 8px 14px;
+}
+
+/* --- 角色选择（等待大厅） --- */
+
+#character-box {
+  margin: 18px 0 0;
+  text-align: center;
+}
+
+#character-box h3 {
+  color: #ffd76a;
+  margin-bottom: 4px;
+}
+
+.character-cards {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(130px, 1fr));
+  gap: 10px;
+  margin-top: 12px;
+}
+
+.character-card {
+  background: #2b2135;
+  border: 2px solid #4d3b5c;
+  border-radius: 12px;
+  padding: 14px 10px;
+  cursor: pointer;
+  transition: transform 0.12s ease, box-shadow 0.12s ease, border-color 0.12s ease;
+}
+
+.character-card:hover {
+  transform: translateY(-2px);
+  border-color: #9b6bd0;
+}
+
+.character-card.selected {
+  border-color: #ffd76a;
+  box-shadow: 0 0 0 2px rgba(255, 215, 106, 0.35), 0 0 18px rgba(255, 215, 106, 0.2);
+}
+
+.character-card h4 {
+  color: #ffd76a;
+  margin: 6px 0 2px;
+}
+
+.character-card .desc {
+  color: #cbbfa9;
+  font-size: 13px;
+}
+
+.character-icon {
+  font-size: 44px;
+  line-height: 1;
+}
+
+/* --- 反作弊：人机验证弹窗 + 禁赛提示 --- */
+
+.ban-banner {
+  background: linear-gradient(135deg, #5c2a2a, #a03f3f);
+  border: 1px solid #d06b6b;
+}
+
+.captcha-overlay {
+  position: fixed;
+  inset: 0;
+  z-index: 1000;
+  background: rgba(0, 0, 0, 0.7);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  backdrop-filter: blur(3px);
+}
+
+.captcha-box {
+  background: linear-gradient(150deg, #2b2136, #3a2c4a);
+  border: 1px solid #9b6bd0;
+  border-radius: 14px;
+  padding: 24px 28px;
+  max-width: 360px;
+  width: 90%;
+  text-align: center;
+  box-shadow: 0 0 30px rgba(155, 107, 208, 0.35);
+}
+
+.captcha-box h3 {
+  color: #ffd76a;
+  margin: 0 0 10px;
+}
+
+.captcha-image {
+  display: block;
+  max-width: 100%;
+  margin: 14px auto;
+  border-radius: 8px;
+  border: 1px solid rgba(155, 107, 208, 0.45);
+  background: #fff;   /* captcha 库默认白底，加白底防止透明背景穿透 */
+}
+
+.captcha-options {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 8px;
+  margin: 14px 0;
+}
+
+.captcha-option {
+  padding: 10px 6px;
+  font-size: 1.1rem;
+  font-weight: bold;
+  border-radius: 8px;
+  border: 1px solid rgba(155, 107, 208, 0.5);
+  background: rgba(0, 0, 0, 0.25);
+  color: #f0e9d8;
+  cursor: pointer;
+  transition: background 0.15s, border-color 0.15s;
+}
+
+.captcha-option:hover {
+  background: rgba(155, 107, 208, 0.25);
+}
+
+.captcha-option.selected {
+  background: #6b3fa0;
+  border-color: #c39bff;
+  box-shadow: 0 0 10px rgba(155, 107, 208, 0.5);
+}
+
+.captcha-box button {
+  margin-top: 10px;
+  width: 100%;
+}

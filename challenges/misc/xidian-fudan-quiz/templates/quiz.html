@@ -1,0 +1,232 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>西复问答 · MoeCTF 2026</title>
+  <style>
+    .tp-rotate {
+        display: inline-block;
+        animation: tp-rotate linear 2s infinite;
+    }
+    .tp-rotate>span {
+        display: inline-block;
+        vertical-align: middle;
+        transform: rotate(180deg);
+    }
+    @keyframes tp-rotate {
+        from { transform: rotate(0); }
+        to { transform: rotate(360deg); }
+    }
+  </style>
+  <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+</head>
+<body class="quiz-bg">
+  <nav class="topbar">
+    <div class="topbar-inner">
+      <span class="topbar-title"><span class="tp-rotate">西<span>复</span></span>问答</span>
+      <div class="topbar-right">
+        <span class="topbar-user">MoeCTF 2026 · 外部挑战</span>
+      </div>
+    </div>
+  </nav>
+
+  <main class="quiz-main">
+    <!-- 进度条 -->
+    <section class="progress-section">
+      <div class="progress-header">
+        <h2>答题进度</h2>
+        <span class="progress-count">{{ solved_count }} / {{ total_count }}</span>
+      </div>
+      <div class="progress-bar-bg">
+        <div class="progress-bar-fill" style="width: {{ (solved_count / total_count * 100)|round(1) }}%"></div>
+      </div>
+    </section>
+
+    <!-- Flag 领取区 -->
+    <section class="flag-section">
+      <div class="flag-card {% if flag_claimed %}claimed{% endif %}">
+        <div class="flag-card-left">
+          <span class="flag-badge">FLAG</span>
+          <span class="flag-desc">答对全部 {{ total_count }} 题可领取</span>
+        </div>
+        <div class="flag-card-right">
+          {% if flag_claimed %}
+            <a href="{{ url_for('get_flag') }}" class="btn btn-sm btn-outline">查看 Flag</a>
+            <span class="claim-status claimed-badge">已领取 ✓</span>
+          {% elif flag_eligible %}
+            <a href="{{ url_for('get_flag') }}" class="btn btn-sm btn-primary">领取 Flag</a>
+          {% else %}
+            <button class="btn btn-sm btn-disabled" disabled>解锁条件：{{ solved_count }}/{{ total_count }}</button>
+          {% endif %}
+        </div>
+      </div>
+    </section>
+
+    {% with msgs = get_flashed_messages(with_categories=true) %}
+    {% if msgs %}
+    <div class="flash-messages" style="max-width:800px;margin:0 auto 1rem;">
+      {% for cat, msg in msgs %}
+      <div class="flash {{ cat }} text-center">{{ msg }}</div>
+      {% endfor %}
+    </div>
+    {% endif %}
+    {% endwith %}
+
+    <!-- 题目列表 -->
+    <section class="challenges-section">
+      <h2>题目列表</h2>
+      <div class="challenge-grid">
+        {% for ch in challenges %}
+        <div class="challenge-card
+          {% if ch.solved %}card-solved{% endif %}
+          {% if ch.locked and not ch.solved %}card-locked{% endif %}
+          " id="challenge-{{ ch.id }}">
+
+          <div class="card-top">
+            <span class="card-category">{{ ch.category }}</span>
+            <span class="card-status">
+              {% if ch.solved %}
+                ✅ 已解决
+              {% elif ch.locked %}
+                🔒 已锁定
+              {% else %}
+                ⏳ 待回答
+              {% endif %}
+            </span>
+          </div>
+
+          <div class="card-question">
+            <span class="q-num">#{{ "%02d"|format(ch.id) }}</span>
+            <p>{{ ch.question }}</p>
+          </div>
+
+          {% if ch.image %}
+          <div class="card-image">
+            <img src="{{ url_for('static', filename='images/' + ch.image) }}"
+                 alt="题目图片 {{ ch.id }}"
+                 loading="lazy">
+          </div>
+          {% endif %}
+
+          {% if ch.solved %}
+            <div class="card-feedback solved-feedback">✅ 已回答正确</div>
+          {% elif ch.locked %}
+            <div class="card-feedback locked-feedback">🔒 该题已锁定</div>
+          {% else %}
+            <form class="answer-form" data-challenge="{{ ch.id }}">
+              <div class="answer-row">
+                <input
+                  type="text"
+                  name="answer"
+                  class="answer-input"
+                  placeholder="输入你的答案..."
+                  required
+                  autocomplete="off"
+                  {% if ch.remaining <= 0 %}disabled{% endif %}
+                >
+                <button type="submit" class="btn btn-primary btn-submit"
+                        {% if ch.remaining <= 0 %}disabled{% endif %}>
+                  提交
+                </button>
+              </div>
+              <div class="answer-meta">
+                剩余尝试次数：<span class="attempts-left">{{ ch.remaining }}</span>
+              </div>
+              <div class="answer-feedback"></div>
+            </form>
+          {% endif %}
+        </div>
+        {% endfor %}
+      </div>
+    </section>
+  </main>
+
+  <script>
+  document.querySelectorAll('.answer-form').forEach(form => {
+    const chId = form.dataset.challenge;
+    const input = form.querySelector('.answer-input');
+    const submitBtn = form.querySelector('.btn-submit');
+    const feedback = form.querySelector('.answer-feedback');
+    const attemptsSpan = form.querySelector('.attempts-left');
+
+    form.addEventListener('submit', async (e) => {
+      e.preventDefault();
+      const answer = input.value.trim();
+      if (!answer) return;
+
+      // 禁用按钮，防止重复提交
+      submitBtn.disabled = true;
+      submitBtn.textContent = '提交中…';
+      feedback.innerHTML = '';
+      feedback.className = 'answer-feedback';
+
+      const body = new URLSearchParams();
+      body.set('answer', answer);
+
+      try {
+        const res = await fetch('{{ url_for("submit_answer", challenge_id=0) }}'.replace('0', chId), {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+          body: body.toString(),
+        });
+
+        const data = await res.json();
+
+        if (data.ok) {
+          // 正确
+          feedback.className = 'answer-feedback success';
+          feedback.innerHTML = '🎉 回答正确！';
+          attemptsSpan.textContent = '0';
+
+          // 更新卡片状态
+          const card = document.getElementById('challenge-' + chId);
+          card.classList.remove('card-locked');
+          card.classList.add('card-solved');
+          card.querySelector('.card-status').innerHTML = '✅ 已解决';
+          form.querySelector('.answer-row').remove();
+          form.querySelector('.answer-meta').remove();
+          feedback.remove();
+          const solvedDiv = document.createElement('div');
+          solvedDiv.className = 'card-feedback solved-feedback';
+          solvedDiv.textContent = '✅ 已回答正确';
+          form.appendChild(solvedDiv);
+
+          // 刷新页面进度 & flag 状态（简单全量刷新）
+          setTimeout(() => location.reload(), 800);
+        } else {
+          // 错误
+          feedback.className = 'answer-feedback error';
+          feedback.innerHTML = data.msg;
+
+          if (data.locked) {
+            attemptsSpan.textContent = '0';
+            const card = document.getElementById('challenge-' + chId);
+            card.classList.add('card-locked');
+            card.querySelector('.card-status').innerHTML = '🔒 已锁定';
+            form.querySelector('.answer-row').remove();
+            form.querySelector('.answer-meta').remove();
+            const lockDiv = document.createElement('div');
+            lockDiv.className = 'card-feedback locked-feedback';
+            lockDiv.textContent = '🔒 该题已锁定';
+            form.appendChild(lockDiv);
+          } else {
+            // 还有剩余次数
+            attemptsSpan.textContent = data.remaining;
+            input.value = '';
+            input.focus();
+            submitBtn.disabled = false;
+            submitBtn.textContent = '提交';
+          }
+        }
+      } catch (err) {
+        feedback.className = 'answer-feedback error';
+        feedback.innerHTML = '网络错误，请重试';
+        submitBtn.disabled = false;
+        submitBtn.textContent = '提交';
+      }
+    });
+  });
+  </script>
+</body>
+</html>

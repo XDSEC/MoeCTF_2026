@@ -1,0 +1,4 @@
+flask>=3.0
+gunicorn>=21.2
+requests>=2.31
+ret2shell_kit

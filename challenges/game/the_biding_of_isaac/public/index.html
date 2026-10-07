@@ -1,0 +1,271 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>The Biding of the Isaac</title>
+  <link rel="stylesheet" href="/static/style.css?v=13" />
+</head>
+<body>
+  <header>
+    <img class="logo" src="/static/assets/logo.svg" alt="logo" />
+    <h1>The Biding of the Isaac</h1>
+    <p class="subtitle">以撒的出价 · 全付竞拍 · 道具Build · Roguelike</p>
+  </header>
+
+  <nav class="tabs">
+    <button class="tab active" data-tab="play">当前房间</button>
+    <button class="tab" data-tab="rank">排行榜</button>
+    <button class="tab" data-tab="lb">全场排行榜</button>
+    <button class="tab" data-tab="history">历史记录</button>
+    <button class="tab" data-tab="rules">规则说明</button>
+  </nav>
+
+  <div id="auth-bar">
+    <span id="auth-status">未登录 · 请输入临时用户识别码验证后加入</span>
+    <span id="ws-status" class="muted hidden"></span>
+    <div class="join-row hidden" id="auth-row">
+      <div id="auth-login">
+        <label for="auth-code">临时用户识别码</label>
+        <div class="auth-code-row">
+          <input id="auth-code" placeholder="粘贴一次性临时识别码" autocomplete="off" spellcheck="false" />
+          <button id="auth-btn" class="primary">验证并加入</button>
+        </div>
+        <p class="join-hint">一次性临时码 · 验证后自动加入对局</p>
+      </div>
+      <button id="rejoin-btn" class="primary hidden">加入对局</button>
+    </div>
+  </div>
+
+  <main>
+    <section id="tab-play" class="panel active">
+      <div id="flag-box" class="banner hidden">
+        <div>你已完成一局，获得动态 FLAG：</div>
+        <code id="flag-value"></code>
+        <button id="copy-flag-btn">复制</button>
+      </div>
+
+      <div class="banner notice-banner">
+        比赛排行榜已被冻结，我们将按照加分规则对排行榜前50%的队伍进行额外加分。
+      </div>
+
+      <!-- 反作弊：禁赛提示（行为可疑未通过人机验证） -->
+      <div id="ban-banner" class="banner ban-banner hidden"></div>
+
+      <!-- 排行榜已冻结（定榜）：冻结后新打完的对局不计入生涯分，但 FLAG 照常发放 -->
+      <div id="freeze-banner" class="banner hidden"></div>
+
+      <!-- 等待大厅：一局结束 / 等待自动开局时显示 -->
+      <div id="waiting">
+        <h2 id="waiting-title">等待大厅</h2>
+        <p id="waiting-banner" class="banner hidden"></p>
+        <p id="waiting-countdown" class="countdown">下一局开始：--:--</p>
+        <p id="waiting-note" class="muted"></p>
+        <div id="player-list" class="player-list"></div>
+        <div id="character-box" class="hidden">
+          <h3>选择你的角色</h3>
+          <p class="muted">开局时携带该角色的初始道具 · 开局前可随时修改</p>
+          <div id="character-cards" class="character-cards"></div>
+        </div>
+      </div>
+
+      <div id="playing" class="hidden">
+        <div id="midgame-banner" class="banner hidden"></div>
+        <div class="top-info">
+          <span id="location"></span>
+          <span id="timer"></span>
+          <span id="funds"></span>
+        </div>
+
+        <div id="spectator-box" class="hidden">
+          <h3>观战中</h3>
+          <p>资金不足，本房间只能观望。</p>
+        </div>
+
+        <div id="bid-box">
+          <div id="room-mods" class="modifiers"></div>
+          <div id="item-cards"></div>
+          <div id="room-rule-hint" class="hidden"></div>
+          <div class="bid-input-row">
+            <input id="bid-input" type="number" min="1" max="99" placeholder="出价" />
+            <button id="bid-btn">提交出价</button>
+          </div>
+          <p id="bid-status" class="muted"></p>
+        </div>
+
+        <div id="result-box" class="hidden"></div>
+      </div>
+    </section>
+
+    <section id="tab-rank" class="panel">
+      <h2>排行榜</h2>
+      <p id="rank-note" class="muted"></p>
+      <table class="rank-table">
+        <thead>
+          <tr><th>#</th><th>玩家</th><th>生涯分</th><th>局数</th><th>场均</th><th>本局总分</th><th>本层资金</th><th>道具</th></tr>
+        </thead>
+        <tbody id="rank-body"></tbody>
+      </table>
+    </section>
+
+    <section id="tab-lb" class="panel">
+      <h2>全场排行榜</h2>
+      <p id="lb-note" class="muted"></p>
+      <table class="rank-table">
+        <thead>
+          <tr><th>#</th><th>玩家</th><th>生涯分</th><th>局数</th><th>场均</th><th>验证失败</th></tr>
+        </thead>
+        <tbody id="lb-body"></tbody>
+      </table>
+    </section>
+
+    <section id="tab-history" class="panel">
+      <h2>历史记录</h2>
+      <div id="history-list"></div>
+    </section>
+
+    <section id="tab-rules" class="panel">
+      <h2>规则说明</h2>
+      <div class="rules-content">
+        <h3>一局游戏</h3>
+        <p>一局由多个 Level（层）组成，每个 Level 包含若干个 Room（房间）。每个 Room 是一次竞拍回合。</p>
+        <p>系统每 <b>10 分钟</b> 自动开一局：不足 20 位人类玩家时，会自动用机器人补足到 20 人。</p>
+
+        <h3>每轮怎么玩</h3>
+        <ol>
+          <li>页面展示当前 Room 和<b>两个道具</b>（两侧各自独立竞拍、各自计分）。</li>
+          <li>点击选中要参与的道具，输入一个数字作为出价。</li>
+          <li>普通玩家只能参与<b>其中一个</b>道具的竞争；拥有「更多选择」的玩家可同时参与两个——两侧各出一个价、各扣一份资金。</li>
+          <li>第 1 层普通 / 宝物房出价范围：<b>1 ~ 99</b>。</li>
+          <li>第 2/3 层全部房间，以及特殊 / Boss 房：<b>1 ~ 999</b>。</li>
+          <li>所有参与玩家都要扣除自己的出价。</li>
+          <li>每侧出价最高者获得对应道具；同时参与两侧的玩家若两边都最高，两个道具都归他。</li>
+        </ol>
+
+        <h3>等待与加入</h3>
+        <ul>
+          <li>对局进行中加入的玩家会进入等待队列，下一局自动开始时加入。</li>
+          <li>大厅会显示下一局开始的倒计时。</li>
+        </ul>
+
+        <h3>角色与初始道具</h3>
+        <p>开局前在等待大厅选择一个角色，开局时会自动携带该角色的初始道具；开局前可随时修改。未选择时随机分配。</p>
+        <ul>
+          <li>以撒：初始携带 D6（六面骰）。</li>
+          <li>游魂：初始携带神圣斗篷。</li>
+          <li>阿撒泻勒：初始携带硫磺火。</li>
+          <li>伊甸：初始携带随机一件道具。</li>
+          <li>雅各和以扫：初始携带更多选择（可同时参与两个道具）。</li>
+        </ul>
+
+        <h3>资金规则</h3>
+        <ul>
+          <li>每个 Level 开始时，玩家获得该 Level 的固定资金。</li>
+          <li>出价不能超过当前剩余资金。</li>
+          <li>无论是否赢得道具，出价都会从资金中扣除。</li>
+          <li>资金不足时，本 Room 只能观战，得 0 分。</li>
+          <li>下一个 Level 会重新发放资金。</li>
+        </ul>
+
+        <h3>得分公式</h3>
+        <p>设本 Room 所有出价的平均值为 A：</p>
+        <pre>A = (所有出价之和) / 人数</pre>
+        <p>目标值为：</p>
+        <pre>T = 2/3 × A + C</pre>
+        <p>单轮基础得分：</p>
+        <pre>score = 100 × e^(-|出价 - T| / σ)</pre>
+        <p>常量 C 和 σ 按房间量级决定：</p>
+        <table class="rank-table">
+          <thead><tr><th>房间量级</th><th>出价上限</th><th>C</th><th>σ</th></tr></thead>
+          <tbody>
+            <tr><td>普通 / 宝物房（第 1 层）</td><td>1 ~ 99</td><td>10</td><td>10</td></tr>
+            <tr><td>第 2/3 层全部房间、特殊 / Boss 房</td><td>1 ~ 999</td><td>50</td><td>100</td></tr>
+          </tbody>
+        </table>
+        <p>出价越接近目标值，得分越高，上限 100 分；道具倍率、固定加分、Boss 双倍在此基础上叠加。每个参与出价的玩家至少获得 <b>5 分</b>保底，即使出价远离目标值也不会出现全员 0.x 分的情况。</p>
+        <p class="warn">⚠️ <b>反转目标</b>：若本房间标注「反转目标」，目标值会在<b>镜像基准</b>（出价上限与本层资金取小者）范围内翻转：<code>T = min(出价上限, 本层资金) − (2/3 × A + C)</code>。此时目标与平均值<b>负相关</b>——大家出价越低，目标反而越接近镜像基准。例如第 2 层（本层资金 500，上限 999）平均出价 100 时目标约 383；第 3 层（资金 1000 &gt; 上限 999）平均出价 100 时目标约 882。看清标注再出价，别一律追低。</p>
+
+        <h3>生涯总分（定三取五）</h3>
+        <p>排行榜的“生涯分”采用「定三取五」，防止新手打一两把高分就上榜：</p>
+        <ul>
+          <li><b>入榜门槛</b>：至少打满 <b>3 局</b>（约半小时）才能进入排行榜。</li>
+          <li><b>取分方式</b>：生涯分 = 你生涯<b>最好 5 场</b>的单局均分；不足 5 场时，直接取已打场次的均分。</li>
+          <li><b>单局均分</b>：该局总分 ÷ 一局房间数（13 个 Room），量级接近 0~100。</li>
+        </ul>
+
+        <h3>特殊房间</h3>
+        <ul>
+          <li><b>反转目标</b>：目标 = min(出价上限, 本层资金) − (2/3×平均出价 + C)。平均出价越低目标越接近镜像基准，例如第 2 层（资金 500）平均 100 时目标约 383（详见上方「得分公式」）。</li>
+          <li><b>双倍得分</b>：本房间所有得分翻倍。</li>
+          <li><b>1~999 上限</b>：可以大力出价，但风险也更大（第 2/3 层的普通房同样是 1~999）。</li>
+          <li><b>Boss 房间</b>：每个 Level 的最后一个房间，通常双倍得分或出现强力道具。</li>
+        </ul>
+
+        <h3>道具效果</h3>
+        <p><b>效果的作用对象</b>：除<b>偷钱袋</b>外，所有道具只作用于<b>持有者自身</b>——出价、得分、资金均只影响自己，不影响他人。偷钱袋是唯一直接作用于他人的道具：每房间开始时从资金最高者身上偷 10% 加到自己账户。同一道具可持有多件，效果<b>按件数叠加</b>：乘区道具倍率连乘（如圣心 ×1.5/件，硫磺火每件把得分出价的 80%~125% 区间上下限扩至 0.8ⁿ×~1.25ⁿ×），固定加分道具按件数相加（如积分护符 +10/件）。折扣/返还道具按<b>实际扣除</b>校验资金：Steam大促常驻只扣 70%，福袋一次性返还下一笔出价 75%（用后消耗），返还类道具可支撑高于当前资金的出价（仍受房间出价上限约束）。</p>
+        <p>道具分三种稀有度：</p>
+        <ul class="rarity-legend">
+          <li><span class="rarity-dot rarity-dot-common"></span><b>常见</b>：效果普通，出现率最高。</li>
+          <li><span class="rarity-dot rarity-dot-rare"></span><b>稀有</b>：效果较强，出现率低。</li>
+          <li><span class="rarity-dot rarity-dot-cursed"></span><b>诅咒</b>：强力但自带代价。</li>
+        </ul>
+
+        <h4>常见道具</h4>
+        <ul>
+          <li>积分护符：每次获得分数时得分 +10（固定加分，参与比例乘算）。</li>
+          <li>妈妈的心脏：Boss Room 中的得分 ×200%（不包含本次出价）。</li>
+          <li>福袋：一次性——返还下一笔出价 75% 的资金，用后消耗。</li>
+          <li>完美视力：争夺道具时，出价按 1.5 倍计算（仅影响出价之和与道具竞争，得分公式仍按原出价）。</li>
+          <li>偷钱袋：每个房间开始时，从总资产第一名（资金最高者）偷取 10% 的资金，从对方账户扣除；先偷后出价，偷到的钱可用于本房间竞拍。</li>
+        </ul>
+
+        <h4>稀有道具</h4>
+        <ul>
+          <li>圣心：后续得分 ×150%。</li>
+          <li>Steam大促：后续出价扣除的资金减少 30%（按折扣后实际扣除校验资金）。</li>
+          <li>硫磺火：计算得分时可在出价的 80%~125% 区间取最高分（平均出价仍按初始出价计算）；多件时区间上下限按件数连乘。</li>
+          <li>神圣斗篷：每层首次竞争失败退回所有资金。</li>
+          <li>六面骰：1/6 概率使当前房间的得分 ×200%。</li>
+          <li>利息：每个房间开始时资金 +10%，进入下一层的初始资金 +20%。</li>
+        </ul>
+
+        <h4>诅咒道具</h4>
+        <ul>
+          <li>黑王子之冠：结算时总得分 +25%，每拥有一个其他道具加成 -5%，最低不低于 +5%。</li>
+          <li>穷人护符：当前资金低于本层初始资金 30% 时每次得分 +20，否则 +5（固定加分，参与比例乘算）；进入下一房间资金 -10%。</li>
+          <li>永恒六面骰：后续得分 ×150%，但有 25% 概率使当前房间得分清零。</li>
+          <li>更多选择：可同时对房间的两个道具出价；同时参与时两方得分之和 ×75%。</li>
+        </ul>
+
+        <h3>最终排名</h3>
+        <p>对局中按本局总分排名；一局结束后，本局成绩会计入生涯记录并更新生涯分。</p>
+
+        <h3>快速开始</h3>
+        <ol>
+          <li>在“当前房间”输入<b>临时用户识别码</b>验证后加入，等待下一局自动开始。</li>
+          <li>每轮输入出价并提交。</li>
+          <li>在“排行榜”和“历史记录”查看结果；完整打完一局后，在“当前房间”即可看到你的动态 FLAG。</li>
+        </ol>
+      </div>
+    </section>
+  </main>
+
+  <!-- 背景音乐：登录并加入后，等待大厅（lobby / finished）播 waiting.m4a，对局中播 begin.m4a -->
+  <audio id="bg-music" loop preload="auto"></audio>
+
+  <!-- 反作弊：人机验证弹窗（行为可疑 / 随机抽查触发，15 秒限时，答错/超时禁赛 1 天） -->
+  <div id="captcha-overlay" class="captcha-overlay hidden">
+    <div class="captcha-box">
+      <h3>🧾 人机验证</h3>
+      <p>你的出价已暂停。请在 <b id="captcha-countdown">15</b> 秒内从
+        6 个选项中选择与图片文字一致的答案。<b>答错用完次数或超时将禁赛 1 天</b>。</p>
+      <img id="captcha-image" class="captcha-image" alt="验证码" />
+      <div id="captcha-options" class="captcha-options"></div>
+      <button id="captcha-submit" class="primary">验证</button>
+      <p id="captcha-status" class="muted"></p>
+    </div>
+  </div>
+
+  <script src="/static/app.js?v=20"></script>
+</body>
+</html>

@@ -1,0 +1,558 @@
+/* ==========================================================
+   MoeCTF 2026 · 西复问答 — Dark CTF Theme
+   ========================================================== */
+
+/* --- Reset & Variables ----------------------------------- */
+*, *::before, *::after {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+}
+
+:root {
+  --bg-deep:       #0a0e1a;
+  --bg-card:       #131a2e;
+  --bg-card-hover: #1a2340;
+  --bg-input:      #0d1225;
+  --border:        #2a3456;
+  --border-focus:  #00d4ff;
+
+  --text-primary:  #e8edf5;
+  --text-secondary:#8892b0;
+  --text-muted:    #5a6484;
+
+  --accent:        #00bcd4;
+  --accent-glow:   rgba(0, 188, 212, 0.25);
+  --success:       #00e676;
+  --success-bg:    rgba(0, 230, 118, 0.10);
+  --danger:        #ff5252;
+  --danger-bg:     rgba(255, 82, 82, 0.10);
+  --warning:       #ffc107;
+  --warning-bg:    rgba(255, 193, 7, 0.10);
+  --locked-color:   #ff7043;
+
+  --radius:        10px;
+  --radius-sm:     6px;
+  --shadow:        0 4px 24px rgba(0,0,0,0.4);
+  --font:          -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto,
+                    "Noto Sans SC", "PingFang SC", "Microsoft YaHei", sans-serif;
+  --mono:          "JetBrains Mono", "Fira Code", "Consolas", monospace;
+}
+
+html { font-size: 16px; }
+body {
+  font-family: var(--font);
+  background: var(--bg-deep);
+  color: var(--text-primary);
+  min-height: 100vh;
+  line-height: 1.6;
+}
+
+a { color: var(--accent); text-decoration: none; }
+a:hover { text-decoration: underline; }
+
+/* --- Buttons ------------------------------------------------- */
+.btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  padding: 10px 22px;
+  border: 1px solid var(--border);
+  border-radius: var(--radius-sm);
+  background: var(--bg-card);
+  color: var(--text-primary);
+  font-size: 0.9rem;
+  font-family: var(--font);
+  cursor: pointer;
+  transition: all 0.2s;
+  white-space: nowrap;
+}
+.btn:hover {
+  background: var(--bg-card-hover);
+  border-color: var(--accent);
+  text-decoration: none;
+}
+.btn-primary {
+  background: var(--accent);
+  color: #000;
+  border-color: var(--accent);
+  font-weight: 600;
+}
+.btn-primary:hover {
+  background: #00e5ff;
+  box-shadow: 0 0 20px var(--accent-glow);
+}
+.btn-sm { padding: 6px 14px; font-size: 0.82rem; }
+.btn-block { width: 100%; }
+.btn-disabled, .btn-disabled:hover {
+  background: var(--bg-card);
+  color: var(--text-muted);
+  border-color: var(--border);
+  cursor: not-allowed;
+  box-shadow: none;
+}
+.btn-outline {
+  background: transparent;
+  border-color: var(--accent);
+  color: var(--accent);
+}
+.btn-outline:hover {
+  background: var(--accent-glow);
+}
+.btn-copy {
+  background: transparent;
+  border: 1px dashed var(--border);
+  color: var(--text-secondary);
+  font-size: 0.85rem;
+}
+.btn-copy:hover {
+  border-color: var(--accent);
+  color: var(--accent);
+}
+
+/* --- Flash Messages ----------------------------------------- */
+.flash-messages { margin-bottom: 1rem; }
+.flash {
+  padding: 12px 18px;
+  border-radius: var(--radius-sm);
+  font-size: 0.9rem;
+  margin-bottom: 8px;
+}
+.flash.success {
+  background: var(--success-bg);
+  border: 1px solid var(--success);
+  color: var(--success);
+}
+.flash.error {
+  background: var(--danger-bg);
+  border: 1px solid var(--danger);
+  color: var(--danger);
+}
+.text-center { text-align: center; }
+
+/* =========================================================
+   LOGIN PAGE
+   ========================================================= */
+.auth-bg {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background:
+    radial-gradient(ellipse at 20% 50%, rgba(0, 188, 212, 0.06) 0%, transparent 60%),
+    radial-gradient(ellipse at 80% 50%, rgba(0, 230, 118, 0.04) 0%, transparent 60%),
+    var(--bg-deep);
+}
+
+.auth-container {
+  width: 100%;
+  max-width: 420px;
+  padding: 20px;
+}
+
+.auth-card {
+  background: var(--bg-card);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  padding: 40px 32px 32px;
+  box-shadow: var(--shadow);
+}
+
+.auth-header {
+  text-align: center;
+  margin-bottom: 32px;
+}
+.logo-icon {
+  font-size: 2.2rem;
+  margin-bottom: 12px;
+  letter-spacing: -2px;
+}
+.logo-bracket { color: var(--accent); }
+.logo-slash   { color: var(--success); }
+.auth-header h1 {
+  font-size: 1.6rem;
+  font-weight: 700;
+  margin-bottom: 4px;
+}
+.subtitle {
+  font-size: 0.85rem;
+  color: var(--text-muted);
+}
+
+.auth-form .input-group {
+  margin-bottom: 20px;
+}
+.auth-form label {
+  display: block;
+  font-size: 0.85rem;
+  color: var(--text-secondary);
+  margin-bottom: 6px;
+}
+.auth-form input {
+  width: 100%;
+  padding: 14px 16px;
+  background: var(--bg-input);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-sm);
+  color: var(--text-primary);
+  font-size: 1rem;
+  outline: none;
+  transition: border 0.2s;
+}
+.auth-form input:focus {
+  border-color: var(--border-focus);
+  box-shadow: 0 0 0 3px var(--accent-glow);
+}
+.auth-form input::placeholder { color: var(--text-muted); }
+
+.auth-footer {
+  text-align: center;
+  font-size: 0.8rem;
+  color: var(--text-muted);
+  margin-top: 24px;
+}
+
+/* =========================================================
+   QUIZ PAGE
+   ========================================================= */
+.quiz-bg { background: var(--bg-deep); }
+
+.topbar {
+  position: sticky;
+  top: 0;
+  z-index: 100;
+  background: rgba(10, 14, 26, 0.92);
+  backdrop-filter: blur(12px);
+  border-bottom: 1px solid var(--border);
+}
+.topbar-inner {
+  max-width: 1100px;
+  margin: 0 auto;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 12px 20px;
+}
+.topbar-title {
+  font-size: 1.15rem;
+  font-weight: 700;
+  color: var(--accent);
+}
+.topbar-right {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+}
+.topbar-user {
+  font-size: 0.85rem;
+  color: var(--text-secondary);
+}
+
+.quiz-main {
+  max-width: 1100px;
+  margin: 0 auto;
+  padding: 24px 20px 60px;
+}
+
+/* --- Progress --- */
+.progress-section {
+  margin-bottom: 28px;
+}
+.progress-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 10px;
+}
+.progress-header h2 {
+  font-size: 1.1rem;
+  font-weight: 600;
+}
+.progress-count {
+  font-size: 0.95rem;
+  color: var(--accent);
+  font-weight: 700;
+  font-family: var(--mono);
+}
+.progress-bar-bg {
+  width: 100%;
+  height: 10px;
+  background: var(--bg-card);
+  border-radius: 99px;
+  overflow: hidden;
+  border: 1px solid var(--border);
+}
+.progress-bar-fill {
+  height: 100%;
+  background: linear-gradient(90deg, var(--accent), var(--success));
+  border-radius: 99px;
+  transition: width 0.5s ease;
+}
+
+/* --- Flag Cards --- */
+.flag-section {
+  margin-bottom: 32px;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+.flag-card {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 16px 22px;
+  border-radius: var(--radius);
+  border: 1px solid var(--border);
+  border-left: 3px solid var(--accent);
+  background: var(--bg-card);
+  transition: all 0.25s;
+}
+.flag-card.claimed {
+  border-color: var(--success);
+  border-left-color: var(--success);
+  background: var(--success-bg);
+}
+
+.flag-card-left {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+}
+.flag-badge {
+  font-family: var(--mono);
+  font-weight: 700;
+  font-size: 0.8rem;
+  padding: 4px 10px;
+  border-radius: 4px;
+  background: rgba(255,255,255,0.06);
+  border: 1px solid var(--border);
+}
+.flag-desc { font-size: 0.88rem; color: var(--text-secondary); }
+.flag-card-right {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+.claimed-badge {
+  font-size: 0.78rem;
+  color: var(--success);
+  font-weight: 600;
+}
+.claim-status { display: inline-block; }
+
+/* --- Challenges --- */
+.challenges-section h2 {
+  font-size: 1.1rem;
+  font-weight: 600;
+  margin-bottom: 16px;
+}
+.challenge-grid {
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+}
+
+.challenge-card {
+  background: var(--bg-card);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  padding: 20px 24px;
+  transition: all 0.25s;
+}
+.challenge-card:hover {
+  border-color: rgba(255,255,255,0.12);
+}
+.challenge-card.card-solved {
+  border-color: var(--success);
+  background: var(--success-bg);
+}
+.challenge-card.card-locked {
+  border-color: var(--locked-color);
+  background: var(--danger-bg);
+}
+
+.card-top {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 12px;
+}
+.card-category {
+  font-size: 0.72rem;
+  text-transform: uppercase;
+  letter-spacing: 0.6px;
+  padding: 3px 10px;
+  border-radius: 99px;
+  background: rgba(255,255,255,0.06);
+  border: 1px solid var(--border);
+  color: var(--text-secondary);
+}
+.card-status {
+  font-size: 0.82rem;
+  font-weight: 600;
+}
+
+.card-question {
+  display: flex;
+  gap: 10px;
+  margin-bottom: 14px;
+}
+.q-num {
+  font-family: var(--mono);
+  font-size: 0.82rem;
+  color: var(--text-muted);
+  flex-shrink: 0;
+  margin-top: 2px;
+}
+.card-question p {
+  font-size: 0.95rem;
+  line-height: 1.7;
+}
+
+/* --- 题目图片 --- */
+.card-image {
+  margin: 0 0 16px;
+  border: 1px solid var(--border);
+  border-radius: var(--radius-sm);
+  overflow: hidden;
+  background: var(--bg-deep);
+}
+.card-image img {
+  display: block;
+  width: 100%;
+  max-width: 480px;
+  height: auto;
+  margin: 0 auto;
+  object-fit: contain;
+}
+
+/* --- Answer form --- */
+.answer-row {
+  display: flex;
+  gap: 8px;
+}
+.answer-input {
+  flex: 1;
+  padding: 10px 14px;
+  background: var(--bg-input);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-sm);
+  color: var(--text-primary);
+  font-size: 0.92rem;
+  outline: none;
+  transition: border 0.2s;
+  font-family: var(--mono);
+}
+.answer-input:focus {
+  border-color: var(--border-focus);
+  box-shadow: 0 0 0 3px var(--accent-glow);
+}
+.answer-input::placeholder { color: var(--text-muted); }
+
+.answer-meta {
+  margin-top: 6px;
+  font-size: 0.76rem;
+  color: var(--text-muted);
+}
+.answer-meta .attempts-left {
+  color: var(--warning);
+  font-weight: 700;
+}
+.answer-feedback {
+  margin-top: 8px;
+  font-size: 0.88rem;
+  font-weight: 600;
+}
+.answer-feedback.success { color: var(--success); }
+.answer-feedback.error   { color: var(--danger); }
+
+.card-feedback {
+  font-size: 0.88rem;
+  font-weight: 600;
+  padding: 8px 0 0;
+}
+.solved-feedback { color: var(--success); }
+.locked-feedback { color: var(--locked-color); }
+
+/* =========================================================
+   FLAG REVEAL PAGE
+   ========================================================= */
+.flag-bg {
+  background:
+    radial-gradient(ellipse at 50% 30%, rgba(0, 188, 212, 0.08) 0%, transparent 60%),
+    var(--bg-deep);
+}
+.flag-main {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-height: calc(100vh - 64px);
+  padding: 40px 20px;
+}
+.flag-reveal-card {
+  background: var(--bg-card);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  padding: 48px 40px 40px;
+  max-width: 640px;
+  width: 100%;
+  text-align: center;
+  box-shadow: 0 8px 48px rgba(0,0,0,0.5);
+}
+.flag-header { margin-bottom: 28px; }
+.flag-label {
+  font-size: 0.8rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 1px;
+  margin-bottom: 8px;
+}
+.fresh-label { color: var(--warning); }
+.claimed-label { color: var(--text-muted); }
+.flag-reveal-card h2 {
+  font-size: 1.8rem;
+  margin-bottom: 6px;
+}
+.flag-subtitle {
+  font-size: 0.88rem;
+  color: var(--text-secondary);
+}
+
+.flag-display {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  background: var(--bg-deep);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-sm);
+  padding: 16px 20px;
+  margin-bottom: 28px;
+  word-break: break-all;
+}
+.flag-text {
+  flex: 1;
+  font-family: var(--mono);
+  font-size: 1rem;
+  color: var(--success);
+  text-align: left;
+  line-height: 1.5;
+  user-select: all;
+}
+
+.flag-actions { margin-top: 8px; }
+.flag-actions .btn { min-width: 160px; }
+
+/* =========================================================
+   Responsive
+   ========================================================= */
+@media (max-width: 640px) {
+  .auth-card { padding: 28px 20px 24px; }
+  .flag-card { flex-direction: column; align-items: flex-start; gap: 10px; }
+  .flag-card-right { width: 100%; justify-content: flex-end; }
+  .flag-reveal-card { padding: 32px 20px 28px; }
+  .flag-display { flex-direction: column; }
+  .flag-text { text-align: center; }
+  .answer-row { flex-direction: column; }
+  .topbar-inner { padding: 10px 14px; }
+  .quiz-main { padding: 16px 14px 40px; }
+}

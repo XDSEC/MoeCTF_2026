@@ -1,0 +1,73 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Flag · MoeCTF 2026</title>
+  <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+</head>
+<body class="flag-bg">
+  <nav class="topbar">
+    <div class="topbar-inner">
+      <span class="topbar-title">西复问答</span>
+      <div class="topbar-right">
+        <a href="{{ url_for('quiz') }}" class="btn btn-sm">← 返回答题</a>
+      </div>
+    </div>
+  </nav>
+
+  <main class="flag-main">
+    <div class="flag-reveal-card">
+      <div class="flag-header">
+        {% if already_claimed %}
+        <div class="flag-label claimed-label">已领取</div>
+        {% else %}
+        <div class="flag-label fresh-label">✨ 恭喜解锁 Flag！</div>
+        {% endif %}
+        <h2>Flag</h2>
+        <p class="flag-subtitle">
+          答对全部 {{ total_count }} 题获得（已答对 {{ solved_count }} 题）
+        </p>
+      </div>
+
+      <div class="flag-display">
+        <code class="flag-text" id="flag-value">{{ flag }}</code>
+        <button class="btn btn-copy" onclick="copyFlag()">
+          📋 复制
+        </button>
+      </div>
+
+      <div class="flag-actions">
+        <a href="{{ url_for('quiz') }}" class="btn btn-primary">继续答题</a>
+      </div>
+    </div>
+  </main>
+
+  <script>
+  function copyFlag() {
+    const flagEl = document.getElementById('flag-value');
+    const text = flagEl.textContent;
+    if (navigator.clipboard) {
+      navigator.clipboard.writeText(text).then(() => {
+        const btn = document.querySelector('.btn-copy');
+        btn.textContent = '✅ 已复制';
+        setTimeout(() => { btn.textContent = '📋 复制'; }, 2000);
+      });
+    } else {
+      // Fallback
+      const ta = document.createElement('textarea');
+      ta.value = text;
+      ta.style.position = 'fixed';
+      ta.style.left = '-9999px';
+      document.body.appendChild(ta);
+      ta.select();
+      document.execCommand('copy');
+      document.body.removeChild(ta);
+      const btn = document.querySelector('.btn-copy');
+      btn.textContent = '✅ 已复制';
+      setTimeout(() => { btn.textContent = '📋 复制'; }, 2000);
+    }
+  }
+  </script>
+</body>
+</html>

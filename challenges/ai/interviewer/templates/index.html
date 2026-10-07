@@ -1,0 +1,476 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>代码面试官 - Python模拟器</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body {
+            font-family: 'Courier New', 'Consolas', monospace;
+            background: #1a1a2e;
+            color: #e0e0e0;
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            padding: 20px;
+        }
+        .container {
+            width: 100%;
+            max-width: 900px;
+        }
+        h1 {
+            text-align: center;
+            color: #00d4aa;
+            margin-bottom: 8px;
+            font-size: 1.6em;
+        }
+        .subtitle {
+            text-align: center;
+            color: #888;
+            margin-bottom: 24px;
+            font-size: 0.9em;
+        }
+        .panel {
+            background: #16213e;
+            border: 1px solid #0f3460;
+            border-radius: 8px;
+            padding: 20px;
+            margin-bottom: 16px;
+        }
+        .panel h2 {
+            color: #e94560;
+            font-size: 1.1em;
+            margin-bottom: 12px;
+        }
+        .panel.locked {
+            opacity: 0.5;
+            pointer-events: none;
+        }
+        .panel.locked .lock-msg {
+            display: block;
+        }
+        .lock-msg {
+            display: none;
+            color: #ffaa00;
+            font-size: 0.85em;
+            margin-bottom: 8px;
+        }
+        textarea {
+            width: 100%;
+            height: 200px;
+            background: #0a0a1a;
+            color: #00d4aa;
+            border: 1px solid #0f3460;
+            border-radius: 4px;
+            padding: 12px;
+            font-family: 'Courier New', 'Consolas', monospace;
+            font-size: 14px;
+            resize: vertical;
+            outline: none;
+        }
+        textarea:focus {
+            border-color: #00d4aa;
+        }
+        .btn-row {
+            display: flex;
+            gap: 10px;
+            margin-top: 12px;
+        }
+        button {
+            padding: 10px 24px;
+            border: none;
+            border-radius: 4px;
+            font-family: inherit;
+            font-size: 14px;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+        button:disabled {
+            opacity: 0.4;
+            cursor: not-allowed;
+        }
+        .btn-run {
+            background: #00d4aa;
+            color: #1a1a2e;
+            font-weight: bold;
+        }
+        .btn-run:hover:not(:disabled) { background: #00ffcc; }
+        .btn-clear { background: #333; color: #ccc; }
+        .btn-clear:hover { background: #444; }
+        .btn-auth {
+            background: #e94560;
+            color: #fff;
+            font-weight: bold;
+        }
+        .btn-auth:hover:not(:disabled) { background: #ff6b81; }
+        .btn-submit {
+            background: #e94560;
+            color: #fff;
+            font-weight: bold;
+        }
+        .btn-submit:hover:not(:disabled) { background: #ff6b81; }
+
+        .output-box {
+            background: #0a0a1a;
+            border: 1px solid #0f3460;
+            border-radius: 4px;
+            padding: 16px;
+            min-height: 60px;
+            white-space: pre-wrap;
+            word-break: break-all;
+            font-size: 14px;
+            color: #e0e0e0;
+        }
+        .output-box.censored { color: #e94560; }
+        .output-box.loading { color: #ffaa00; }
+
+        .flag-section {
+            display: flex;
+            gap: 10px;
+            align-items: center;
+        }
+        .flag-section input {
+            flex: 1;
+            padding: 10px 12px;
+            background: #0a0a1a;
+            color: #ffcc00;
+            border: 1px solid #0f3460;
+            border-radius: 4px;
+            font-family: inherit;
+            font-size: 14px;
+            outline: none;
+        }
+        .flag-section input:focus { border-color: #ffcc00; }
+
+        .input-row {
+            display: flex;
+            gap: 10px;
+            align-items: center;
+        }
+        .input-row input {
+            flex: 1;
+            padding: 10px 12px;
+            background: #0a0a1a;
+            color: #00d4aa;
+            border: 1px solid #0f3460;
+            border-radius: 4px;
+            font-family: inherit;
+            font-size: 14px;
+            outline: none;
+        }
+        .input-row input:focus { border-color: #00d4aa; }
+
+        .tip {
+            color: #666;
+            font-size: 0.85em;
+            margin-top: 8px;
+        }
+        .tip.success { color: #00d4aa; }
+        .tip.error { color: #e94560; }
+
+        .user-badge {
+            display: none;
+            background: #0f3460;
+            border: 1px solid #00d4aa;
+            border-radius: 6px;
+            padding: 12px 16px;
+            margin-top: 10px;
+            color: #00d4aa;
+            font-size: 0.9em;
+        }
+        .user-badge.visible {
+            display: block;
+        }
+        .user-badge .label {
+            color: #888;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>🐍 代码面试官</h1>
+        <p class="subtitle">Python Code Simulator — 面试环境已就绪</p>
+
+        <!-- 身份验证 -->
+        <div class="panel" id="authPanel">
+            <h2>🔑 身份验证</h2>
+            <p class="tip">请输入临时识别码（16进制字符串）以初始化面试环境</p>
+            <div class="input-row">
+                <input type="text" id="authCodeInput" placeholder="例如: a1b2c3d4...">
+                <button class="btn-auth" id="btnAuth" onclick="initUser()">验证</button>
+            </div>
+            <div id="authResult" class="tip"></div>
+            <div class="user-badge" id="userBadge">
+                <span class="label">👤 面试者：</span><span id="userNameDisplay">—</span>
+            </div>
+        </div>
+
+        <!-- 代码输入 -->
+        <div class="panel" id="codePanel">
+            <h2>📝 提交你的Python代码</h2>
+            <div class="lock-msg">🔒 请先完成上方身份验证</div>
+            <textarea id="codeInput" placeholder="# 在这里输入Python代码..."></textarea>
+            <div class="btn-row">
+                <button class="btn-run" id="btnRun" onclick="runCode()">▶ 模拟执行 (Ctrl+Enter)</button>
+                <button class="btn-clear" onclick="clearAll()">清空</button>
+            </div>
+        </div>
+
+        <!-- 输出 -->
+        <div class="panel">
+            <h2>📤 模拟执行结果</h2>
+            <div class="output-box" id="output">等待代码提交...</div>
+        </div>
+
+        <!-- Flag提交 -->
+        <div class="panel">
+            <h2>🏁 提交令牌</h2>
+            <div class="flag-section">
+                <input type="text" id="flagInput" placeholder="moectf{...}">
+                <button class="btn-submit" id="btnSubmitFlag" onclick="submitFlag()" disabled>提交</button>
+            </div>
+            <div id="flagResult" class="tip"></div>
+        </div>
+
+    </div>
+
+    <script>
+        // -------------------- 状态管理 --------------------
+        let initialized = false;
+
+        // 页面加载时检查session状态
+        window.addEventListener('DOMContentLoaded', () => {
+            // 初始状态下锁定代码面板和flag提交
+            updateUILocked(false);
+        });
+
+        // -------------------- UI状态更新 --------------------
+        function updateUILocked(ready) {
+            const codePanel = document.getElementById('codePanel');
+            const btnRun = document.getElementById('btnRun');
+            const btnSubmit = document.getElementById('btnSubmitFlag');
+
+            if (ready) {
+                codePanel.classList.remove('locked');
+                btnRun.disabled = false;
+                btnSubmit.disabled = false;
+                initialized = true;
+            } else {
+                codePanel.classList.add('locked');
+                btnRun.disabled = true;
+                btnSubmit.disabled = true;
+                initialized = false;
+            }
+        }
+
+        // -------------------- 会话失效处理 --------------------
+        function resetAuthUI() {
+            const btnAuth = document.getElementById('btnAuth');
+            const authCodeInput = document.getElementById('authCodeInput');
+            const badge = document.getElementById('userBadge');
+            const authResult = document.getElementById('authResult');
+
+            btnAuth.disabled = false;
+            btnAuth.textContent = '验证';
+            authCodeInput.disabled = false;
+            authCodeInput.value = '';
+            badge.classList.remove('visible');
+            authResult.textContent = '';
+            authResult.className = 'tip';
+        }
+
+        // 服务端session校验失败（如worker切换/过期）时：重新锁定并允许再次验证
+        function handleAuthLost(message) {
+            if (message) {
+                document.getElementById('authResult').textContent = message;
+                document.getElementById('authResult').className = 'tip error';
+            }
+            updateUILocked(false);
+            resetAuthUI();
+        }
+
+        // -------------------- 身份验证 --------------------
+        async function initUser() {
+            const code = document.getElementById('authCodeInput').value.trim();
+            const resultDiv = document.getElementById('authResult');
+            const btnAuth = document.getElementById('btnAuth');
+
+            if (!code) {
+                resultDiv.textContent = '请输入临时识别码';
+                resultDiv.className = 'tip error';
+                return;
+            }
+
+            // 验证是否为16进制
+            if (!/^[0-9a-fA-F]+$/.test(code)) {
+                resultDiv.textContent = '❌ 识别码格式错误，请输入16进制字符串（0-9, a-f）';
+                resultDiv.className = 'tip error';
+                return;
+            }
+
+            btnAuth.disabled = true;
+            btnAuth.textContent = '⏳ 验证中...';
+            resultDiv.textContent = '正在验证身份...';
+            resultDiv.className = 'tip';
+
+            try {
+                const resp = await fetch('api/init', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ code: code })
+                });
+                const data = await resp.json();
+
+                if (resp.ok && data.success) {
+                    resultDiv.textContent = '✅ ' + data.message;
+                    resultDiv.className = 'tip success';
+
+                    // 显示用户信息
+                    const badge = document.getElementById('userBadge');
+                    document.getElementById('userNameDisplay').textContent = data.user_name;
+                    badge.classList.add('visible');
+
+                    // 解锁代码面板和flag提交
+                    updateUILocked(true);
+
+                    // 禁用验证按钮和输入框（只能验证一次）
+                    btnAuth.disabled = true;
+                    document.getElementById('authCodeInput').disabled = true;
+                    btnAuth.textContent = '✅ 已验证';
+                } else {
+                    resultDiv.textContent = '❌ ' + (data.error || '身份验证失败');
+                    resultDiv.className = 'tip error';
+                    btnAuth.disabled = false;
+                    btnAuth.textContent = '验证';
+                }
+            } catch (err) {
+                resultDiv.textContent = '❌ 请求失败: ' + err.message;
+                resultDiv.className = 'tip error';
+                btnAuth.disabled = false;
+                btnAuth.textContent = '验证';
+            }
+        }
+
+        // -------------------- 执行代码 --------------------
+        const codeInput = document.getElementById('codeInput');
+        const outputDiv = document.getElementById('output');
+        const btnRun = document.getElementById('btnRun');
+
+        // Ctrl+Enter 快捷键
+        codeInput.addEventListener('keydown', (e) => {
+            if (e.ctrlKey && e.key === 'Enter') {
+                e.preventDefault();
+                runCode();
+            }
+        });
+
+        async function runCode() {
+            if (!initialized) {
+                outputDiv.textContent = '[请先完成身份验证（输入临时识别码）]';
+                outputDiv.className = 'output-box censored';
+                return;
+            }
+
+            const code = codeInput.value.trim();
+            if (!code) {
+                outputDiv.textContent = '[请输入Python代码]';
+                outputDiv.className = 'output-box censored';
+                return;
+            }
+
+            btnRun.disabled = true;
+            btnRun.textContent = '⏳ 执行中...';
+            outputDiv.textContent = '模拟执行中，请稍候...';
+            outputDiv.className = 'output-box loading';
+
+            try {
+                const resp = await fetch('api/execute', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ code: code })
+                });
+                const data = await resp.json();
+
+                // session校验失败：重新锁定并提示重新验证
+                if (data.needs_auth) {
+                    handleAuthLost(data.output || '[请先完成身份验证]');
+                    return;
+                }
+
+                outputDiv.textContent = data.output || '[无输出]';
+
+                // 根据是否包含CENSORED来设置样式
+                if (data.output && data.output.includes('[CENSORED]')) {
+                    outputDiv.className = 'output-box censored';
+                } else {
+                    outputDiv.className = 'output-box';
+                }
+            } catch (err) {
+                outputDiv.textContent = '[请求失败: ' + err.message + ']';
+                outputDiv.className = 'output-box censored';
+            } finally {
+                btnRun.disabled = false;
+                btnRun.textContent = '▶ 模拟执行 (Ctrl+Enter)';
+            }
+        }
+
+        // -------------------- 提交Flag --------------------
+        async function submitFlag() {
+            if (!initialized) {
+                document.getElementById('flagResult').textContent = '❌ 请先完成身份验证';
+                document.getElementById('flagResult').style.color = '#e94560';
+                return;
+            }
+
+            const flag = document.getElementById('flagInput').value.trim();
+            const resultDiv = document.getElementById('flagResult');
+
+            if (!flag) {
+                resultDiv.textContent = '请输入令牌';
+                resultDiv.style.color = '#e94560';
+                return;
+            }
+
+            try {
+                const resp = await fetch('api/submit_flag', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ flag: flag })
+                });
+                const data = await resp.json();
+
+                // session校验失败：重新锁定并提示重新验证
+                if (data.needs_auth) {
+                    handleAuthLost(data.message || '[请先完成身份验证]');
+                    return;
+                }
+
+                resultDiv.textContent = data.message;
+                resultDiv.style.color = data.correct ? '#00d4aa' : '#e94560';
+            } catch (err) {
+                resultDiv.textContent = '请求失败: ' + err.message;
+                resultDiv.style.color = '#e94560';
+            }
+        }
+
+        // -------------------- 清空 --------------------
+        function clearAll() {
+            codeInput.value = '';
+            outputDiv.textContent = '等待代码提交...';
+            outputDiv.className = 'output-box';
+            document.getElementById('flagInput').value = '';
+            document.getElementById('flagResult').textContent = '';
+        }
+
+        // 回车键提交识别码
+        document.getElementById('authCodeInput').addEventListener('keydown', (e) => {
+            if (e.key === 'Enter') {
+                e.preventDefault();
+                initUser();
+            }
+        });
+    </script>
+</body>
+</html>

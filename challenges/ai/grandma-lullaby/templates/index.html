@@ -1,0 +1,312 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>外婆的歌谣</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body {
+            font-family: 'Georgia', 'SimSun', 'Microsoft YaHei', serif;
+            background: #1a1a2c;
+            color: #e0d5c0;
+            min-height: 100vh; display: flex; flex-direction: column; align-items: center; padding: 20px;
+        }
+        .container { width: 100%; max-width: 650px; display: flex; flex-direction: column; height: 95vh; }
+        h1 { text-align: center; color: #f4a261; margin-bottom: 4px; font-size: 1.6em; letter-spacing: 2px; }
+        .subtitle { text-align: center; color: #8a7a6a; margin-bottom: 20px; font-size: 0.85em; font-style: italic; }
+        .chat-box {
+            flex: 1; overflow-y: auto; background: #16162a; border: 1px solid #2a2a4e;
+            border-radius: 10px 10px 0 0; padding: 18px 20px;
+        }
+        .msg { margin-bottom: 16px; max-width: 82%; line-height: 1.7; font-size: 0.95em; }
+        .msg.user {
+            margin-left: auto; background: #2d3a3a; color: #c8e6c9;
+            padding: 12px 16px; border-radius: 14px 14px 2px 14px;
+        }
+        .msg.ai {
+            margin-right: auto; background: #1f2444; color: #e0d5c0;
+            padding: 12px 16px; border-radius: 14px 14px 14px 2px;
+        }
+        .msg.ai.loading { opacity: 0.5; font-style: italic; }
+        .input-row {
+            display: flex; gap: 8px; background: #16162a; border: 1px solid #2a2a4e;
+            border-top: none; border-radius: 0 0 10px 10px; padding: 12px 14px;
+        }
+        .input-row input {
+            flex: 1; padding: 12px 14px; background: #0d0d1f; color: #f4a261;
+            border: 1px solid #2a2a4e; border-radius: 6px; font-family: inherit; font-size: 14px; outline: none;
+        }
+        .input-row input:focus { border-color: #f4a261; }
+        .input-row button {
+            padding: 12px 22px; background: #f4a261; color: #1a1a2c; border: none;
+            border-radius: 6px; font-weight: bold; cursor: pointer; font-family: inherit;
+            font-size: 14px; transition: 0.15s;
+        }
+        .input-row button:hover { background: #e76f51; }
+        .input-row button:disabled { background: #444; color: #888; cursor: not-allowed; }
+        .flag-panel {
+            background: #16162a; border: 1px solid #2a2a4e; border-radius: 10px;
+            padding: 14px 16px; margin-top: 12px; display: flex; gap: 8px; align-items: center;
+        }
+        .flag-panel input {
+            flex: 1; padding: 10px 12px; background: #0d0d1f; color: #ffcc00;
+            border: 1px solid #2a2a4e; border-radius: 6px; font-family: inherit; font-size: 13px; outline: none;
+        }
+        .flag-panel input:focus { border-color: #ffcc00; }
+        .flag-panel button {
+            padding: 10px 20px; background: #e76f51; color: #fff; border: none;
+            border-radius: 6px; font-weight: bold; cursor: pointer; font-family: inherit;
+        }
+        .flag-panel button:hover { background: #f0806a; }
+        #flagResult { font-size: 0.85em; margin-top: 4px; color: #8a7a6a; }
+        .auth-panel {
+            background: #16162a; border: 1px solid #2a2a4e; border-radius: 10px;
+            padding: 24px 20px; margin-top: 12px; text-align: center;
+        }
+        .auth-hint { color: #e0d5c0; line-height: 1.8; margin-bottom: 16px; font-size: 0.95em; }
+        .auth-row { display: flex; gap: 8px; justify-content: center; }
+        .auth-row input {
+            flex: 1; max-width: 320px; padding: 12px 14px; background: #0d0d1f; color: #f4a261;
+            border: 1px solid #2a2a4e; border-radius: 6px; font-family: inherit; font-size: 14px; outline: none;
+        }
+        .auth-row input:focus { border-color: #f4a261; }
+        .auth-row button {
+            padding: 12px 22px; background: #f4a261; color: #1a1a2c; border: none;
+            border-radius: 6px; font-weight: bold; cursor: pointer; font-family: inherit;
+            font-size: 14px; transition: 0.15s;
+        }
+        .auth-row button:hover { background: #e76f51; }
+        .auth-row button:disabled { background: #444; color: #888; cursor: not-allowed; }
+        .auth-result { font-size: 0.85em; margin-top: 12px; color: #8a7a6a; min-height: 1em; }
+        .auth-tabs { display: flex; gap: 6px; justify-content: center; margin-bottom: 16px; }
+        .auth-tab {
+            padding: 8px 16px; background: #0d0d1f; color: #8a7a6a;
+            border: 1px solid #2a2a4e; border-radius: 6px; cursor: pointer;
+            font-family: inherit; font-size: 0.85em; transition: 0.15s;
+        }
+        .auth-tab:hover { color: #e0d5c0; border-color: #f4a261; }
+        .auth-tab.active { background: #f4a261; color: #1a1a2c; border-color: #f4a261; font-weight: bold; }
+        .auth-tabs-hint { text-align: center; color: #8a7a6a; font-size: 0.75em; margin-top: 6px; }
+        #mainPanel { flex: 1; display: flex; flex-direction: column; min-height: 0; }
+        ::-webkit-scrollbar { width: 4px; }
+        ::-webkit-scrollbar-thumb { background: #2a2a4e; border-radius: 2px; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>🌙 外婆的歌谣</h1>
+
+        <div class="auth-panel" id="authPanel">
+            <p class="auth-hint" id="authHint">外婆想确认一下你的身份~<br>选择下面的方式，把对应凭证告诉我吧：</p>
+            <div class="auth-tabs" id="authTabs">
+                <button class="auth-tab active" data-mode="player" onclick="setMode('player')">临时用户识别码</button>
+                <button class="auth-tab" data-mode="team" onclick="setMode('team')">队伍密钥</button>
+            </div>
+            <div class="auth-row">
+                <input type="text" id="codeInput" placeholder="临时用户识别码"
+                       onkeydown="if(event.key==='Enter')initUser()">
+                <button onclick="initUser()">身份验证</button>
+            </div>
+            <div class="auth-tabs-hint" id="authTabsHint"><b>比赛过程中请使用队伍密钥，队伍密钥在顶部的队伍管理页面中可以找到。</b></div>
+            <div id="authResult" class="auth-result"></div>
+        </div>
+
+        <div id="mainPanel" style="display:none;">
+            <p class="subtitle">小谣在等你……有什么想聊的吗？
+                <button class="btn-reset" onclick="resetChat()" style="margin-left:12px;padding:4px 12px;background:#444;color:#aaa;border:1px solid #555;border-radius:4px;cursor:pointer;font-size:0.8em;font-family:inherit;">↻ 重新开始</button>
+            </p>
+
+            <div class="chat-box" id="chatBox">
+                <div class="msg ai">晚上好呀，我是小谣。想聊些什么呢？</div>
+            </div>
+
+            <div class="input-row">
+                <input type="text" id="msgInput" placeholder="跟小谣说点什么……"
+                       onkeydown="if(event.key==='Enter')send()">
+                <button id="btnSend" onclick="send()">发送</button>
+            </div>
+
+            <div class="flag-panel">
+                <input type="text" id="flagInput" placeholder="moectf{...}">
+                <button onclick="submitFlag()">提交令牌</button>
+            </div>
+            <div id="flagResult"></div>
+        </div>
+    </div>
+
+    <script>
+        const chatBox = document.getElementById('chatBox');
+        const msgInput = document.getElementById('msgInput');
+        const btnSend = document.getElementById('btnSend');
+        let initialized = false;
+
+        // fromTeam=true → 输入队伍密钥；否则 → 输入临时用户识别码
+        // 支持 ?fromTeam=1 深链默认切到队伍模式
+        const urlParams = new URLSearchParams(window.location.search);
+        const defaultFromTeam = urlParams.get('fromTeam') === '1' || urlParams.get('fromTeam') === 'true';
+        let fromTeam = defaultFromTeam;
+
+        function setMode(mode) {
+            fromTeam = mode === 'team';
+            document.querySelectorAll('.auth-tab').forEach(t =>
+                t.classList.toggle('active', t.dataset.mode === mode));
+            const hint = document.getElementById('authHint');
+            const input = document.getElementById('codeInput');
+            if (fromTeam) {
+                hint.innerHTML = '外婆想确认一下你的身份~<br>把队伍的密钥告诉我吧：';
+                input.placeholder = '队伍密钥';
+            } else {
+                hint.innerHTML = '外婆想确认一下你的身份~<br>把平台给你的临时识别码告诉我吧：';
+                input.placeholder = '临时用户识别码';
+            }
+            document.getElementById('codeInput').focus();
+        }
+
+        function addMsg(text, role) {
+            const div = document.createElement('div');
+            div.className = 'msg ' + role;
+            div.textContent = text;
+            chatBox.appendChild(div);
+            chatBox.scrollTop = chatBox.scrollHeight;
+        }
+
+        function showAuth(message) {
+            initialized = false;
+            document.getElementById('mainPanel').style.display = 'none';
+            document.getElementById('authPanel').style.display = 'block';
+            const result = document.getElementById('authResult');
+            result.textContent = message || '身份验证已过期，请重新输入识别码';
+            result.style.color = '#e76f51';
+            document.getElementById('codeInput').focus();
+        }
+
+        function enterChat(userName) {
+            initialized = true;
+            document.getElementById('authPanel').style.display = 'none';
+            document.getElementById('mainPanel').style.display = 'flex';
+            addMsg('外婆认出你了。欢迎回来，' + userName + '。', 'ai');
+            msgInput.focus();
+        }
+
+        async function initUser() {
+            const code = document.getElementById('codeInput').value.trim();
+            const result = document.getElementById('authResult');
+            if (!code) { result.textContent = '请输入识别码'; result.style.color = '#e76f51'; return; }
+            try {
+                const resp = await fetch('api/init', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ code, fromTeam })
+                });
+                const data = await resp.json();
+                if (data.success) {
+                    result.textContent = '';
+                    enterChat(data.user_name);
+                } else {
+                    result.textContent = data.error || '身份验证失败';
+                    result.style.color = '#e76f51';
+                }
+            } catch (e) {
+                result.textContent = '请求失败，请稍后再试';
+                result.style.color = '#e76f51';
+            }
+        }
+
+        async function send() {
+            const msg = msgInput.value.trim();
+            if (!msg) return;
+            addMsg(msg, 'user');
+            msgInput.value = '';
+            btnSend.disabled = true;
+            btnSend.textContent = '...';
+
+            const loading = document.createElement('div');
+            loading.className = 'msg ai loading';
+            loading.textContent = '小谣在想……';
+            chatBox.appendChild(loading);
+
+            try {
+                const resp = await fetch('api/chat', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ message: msg })
+                });
+                const data = await resp.json();
+                loading.remove();
+                if (data.needs_auth) {
+                    showAuth(data.response);
+                    return;
+                }
+                addMsg(data.response || '……', 'ai');
+            } catch (err) {
+                loading.remove();
+                addMsg('[小谣不在……请稍后再试]', 'ai');
+            } finally {
+                btnSend.disabled = false;
+                btnSend.textContent = '发送';
+                msgInput.focus();
+            }
+        }
+
+        async function submitFlag() {
+            const flag = document.getElementById('flagInput').value.trim();
+            const result = document.getElementById('flagResult');
+            if (!flag) { result.textContent = '请输入令牌'; result.style.color = '#e76f51'; return; }
+            try {
+                const resp = await fetch('api/submit_flag', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ flag })
+                });
+                const data = await resp.json();
+                if (data.needs_auth) {
+                    showAuth(data.message);
+                    return;
+                }
+                result.textContent = data.message;
+                result.style.color = data.correct ? '#2ecc71' : '#e76f51';
+            } catch (e) {
+                result.textContent = '请求失败';
+                result.style.color = '#e76f51';
+            }
+        }
+
+        async function resetChat() {
+            try {
+                const resp = await fetch('api/reset', { method: 'POST' });
+                if (!resp.ok) {
+                    const data = await resp.json().catch(() => ({}));
+                    addMsg(data.message || '重置失败，请稍后重试', 'ai');
+                    return;   // 服务端没清掉就不能假装重置成功
+                }
+            } catch (e) {
+                addMsg('重置失败：网络异常，请稍后重试', 'ai');
+                return;
+            }
+            chatBox.innerHTML = '<div class="msg ai">你好呀，我是小谣。想聊些什么呢？</div>';
+            document.getElementById('flagInput').value = '';
+            document.getElementById('flagResult').textContent = '';
+            msgInput.focus();
+        }
+
+        // 根据默认模式初始化提示文案（用户也可在页面上切换）
+        setMode(defaultFromTeam ? 'team' : 'player');
+
+        // 页面加载时检查会话状态，已初始化则直接进入聊天
+        window.addEventListener('DOMContentLoaded', async () => {
+            try {
+                const resp = await fetch('api/status');
+                const data = await resp.json();
+                if (data.initialized && data.user_name) {
+                    document.getElementById('authPanel').style.display = 'none';
+                    document.getElementById('mainPanel').style.display = 'flex';
+                    initialized = true;
+                    addMsg('外婆认出你了。欢迎回来，' + data.user_name + '。', 'ai');
+                }
+            } catch (e) {}
+            document.getElementById('codeInput').focus();
+        });
+    </script>
+</body>
+</html>
