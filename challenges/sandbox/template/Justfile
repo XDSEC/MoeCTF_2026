@@ -1,0 +1,14 @@
+minify:
+	rg -Uv '^\s*(\#.*)?$n?' < ./chall.py > main.py && \
+	rg -Uv '^\s*(\#.*)?$n?' < ./template.py >> main.py
+
+docker: minify
+	docker build . -t localhost/jail-template:latest
+
+save: docker
+	docker save localhost/jail-template:latest -o jail-template.tar
+
+build: minify docker
+
+test: build
+	docker run --rm -it -p 80:9999 jail-template:latest
