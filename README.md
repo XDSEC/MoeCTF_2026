@@ -16,7 +16,7 @@ MoeCTF 是西安电子科技大学一年一度的信息安全新生夺旗赛, �
 
 **比赛时间**：2026.08.09 ~ 2026.10.09；
 
-**比赛规模**：4276 个报名队伍；
+**比赛规模**：4455 个报名队伍；
 
 **比赛平台**：[Ret2Shell](https://ctf.xidian.edu.cn/magic/about) by XDSEC Cat Cat Developers；
 
