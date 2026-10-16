@@ -1,0 +1,1 @@
+[re:=__import__('re'),inp := input('Give me your code: '),check:= lambda s : re.fullmatch(r'[a-z._+\-*/]+',s) is not None,res:=eval(inp) if check(inp) and len(inp) < 0x777 else 1] and (print(res) or eval(bytes.fromhex(hex(res)[2:])))
