@@ -87,9 +87,9 @@ if remote_on:
 ## ez_ban_ja1l
 
 ### Info
-分数 : 50 pts
-出题人 : starwalking
-题目路径 : [ez_ban_ja1l](../../../challenges/sandbox/ez_ban_ja1l/)
+分数 : 50 pts  
+出题人 : starwalking  
+题目路径 : [ez_ban_ja1l](../../../challenges/sandbox/ez_ban_ja1l/)  
 
 ### Payload
 
@@ -119,9 +119,9 @@ __import__('os').system('whoami')
 ## e2_ban_jail
 
 ### Info
-分数 : 100 pts
-出题人 : starwalking
-题目路径 : [e2_ban_jail](../../challenges/sandbox/e2_ban_jail/)
+分数 : 100 pts  
+出题人 : starwalking  
+题目路径 : [e2_ban_jail](../../challenges/sandbox/e2_ban_jail/)  
 
 ### Payload
 
@@ -156,9 +156,9 @@ c = (c * c + True) * c # c = 32
 ## 3z_ban_jail
 
 ### Info
-分数 : 100 pts
-出题人 : starwalking
-题目路径 : [3z_ban_jail](../../challenges/sandbox/3z_ban_jail/)
+分数 : 100 pts  
+出题人 : starwalking  
+题目路径 : [3z_ban_jail](../../challenges/sandbox/3z_ban_jail/)  
 
 ### Payload
 
@@ -188,9 +188,9 @@ Python 解释器会在解析街道将所有标识符转化成 **NFKC** 规范形
 ## ez_b4n_jail
 
 ### Info
-分数 : 100 pts
-出题人 : starwalking
-题目路径 : [ez_b4n_jail](../../challenges/sandbox/ez_b4n_jail/)
+分数 : 100 pts  
+出题人 : starwalking  
+题目路径 : [ez_b4n_jail](../../challenges/sandbox/ez_b4n_jail/)  
 
 ### Payload
 
@@ -242,9 +242,9 @@ Module(
 ## Three
 
 ### Info
-分数 : 100 pts
-出题人 : starwalking
-题目路径 : [Three](../../challenges/sandbox/Three/)
+分数 : 100 pts  
+出题人 : starwalking  
+题目路径 : [Three](../../challenges/sandbox/Three/)  
 
 ### Payload
 
@@ -357,9 +357,9 @@ just a game jail.
 ## equals
 
 ### Info
-分数 : 100 pts
-出题人 : starwalking
-题目路径 : [equals](../../challenges/sandbox/equals/)
+分数 : 100 pts  
+出题人 : starwalking  
+题目路径 : [equals](../../challenges/sandbox/equals/)  
 
 ### Payload
 
@@ -393,9 +393,9 @@ def solve(cmd:str,base:str) -> str:
 ## mathmagic
 
 ### Info
-分数 : 100 pts
-出题人 : starwalking
-题目路径 : [mathmagic](../../challenges/sandbox/mathmagic/)
+分数 : 100 pts  
+出题人 : starwalking  
+题目路径 : [mathmagic](../../challenges/sandbox/mathmagic/)  
 
 ### Payload
 
@@ -503,9 +503,9 @@ p.interactive()
 ## CleanHacker
 
 ### Info
-分数 : 150 pts
-出题人 : starwalking
-题目路径 : [CleanHacker](../../challenges/sandbox/CleanHacker/)
+分数 : 150 pts  
+出题人 : starwalking  
+题目路径 : [CleanHacker](../../challenges/sandbox/CleanHacker/)  
 
 ### Payload
 
@@ -556,9 +556,9 @@ except E as N:
 ## Parens? No!
 
 ### Info
-分数 : 150 pts
-出题人 : starwalking
-题目路径 : [Parens? No!](../../challenges/sandbox/ParensNo/)
+分数 : 150 pts  
+出题人 : starwalking  
+题目路径 : [Parens? No!](../../challenges/sandbox/ParensNo/)  
 
 ### Payload
 第一次提交  
@@ -618,9 +618,9 @@ func = exec(func)
 ## only_open
 
 ### Info
-分数 : 150 pts
-出题人 : starwalking
-题目路径 : [only_open](../../challenges/sandbox/only_open/)
+分数 : 150 pts  
+出题人 : starwalking  
+题目路径 : [only_open](../../challenges/sandbox/only_open/)  
 
 ### Payload
 
@@ -641,9 +641,9 @@ open一个不存在的文件时，会引发一个 `FileNotFoundError` 异常，�
 ## CatBox
 
 ### Info
-分数 : 200 pts
-出题人 : starwalking
-题目路径 : [CatBox](../../challenges/sandbox/CatBox/)
+分数 : 200 pts  
+出题人 : starwalking  
+题目路径 : [CatBox](../../challenges/sandbox/CatBox/)  
 
 ### Payload
 
@@ -762,9 +762,9 @@ cat.__init__.__globals__ is globals() # True
 ## Parens? No! Revenge!
 
 ### Info
-分数 : 300 pts
-出题人 : starwalking
-题目路径 : [Parens? No! Revenge!](../../challenges/sandbox/ParensNo/)
+分数 : 300 pts  
+出题人 : starwalking  
+题目路径 : [Parens? No! Revenge!](../../challenges/sandbox/ParensNo/)  
 
 ### Payload
 
@@ -852,9 +852,9 @@ a = op1 if condition else op2
 ## Pyjail笑传之CallingComesBack
 
 ### Info
-分数 : 300 pts
-出题人 : starwalking
-题目路径 : [Pyjail笑传之CallingComesBack](../../challenges/sandbox/Pyjail笑传之CallingComesBack/)
+分数 : 300 pts  
+出题人 : starwalking  
+题目路径 : [Pyjail笑传之CallingComesBack](../../challenges/sandbox/Pyjail笑传之CallingComesBack/)  
 
 ### Payload
 
@@ -881,9 +881,9 @@ a = op1 if condition else op2
 ## 双十一
 
 ### Info
-分数 : 300 pts
-出题人 : starwalking
-题目路径 : [双十一](../../challenges/sandbox/双十一/)
+分数 : 300 pts  
+出题人 : starwalking  
+题目路径 : [双十一](../../challenges/sandbox/双十一/)  
 
 ### Payload
 
@@ -983,9 +983,9 @@ With an argument, equivalent to object.__dict__.
 ## 永不消逝的数字
 
 ### Info
-分数 : 300 pts
-出题人 : starwalking
-题目路径 : [永不消逝的数字](../../challenges/sandbox/永不消逝的数字/)
+分数 : 300 pts  
+出题人 : starwalking  
+题目路径 : [永不消逝的数字](../../challenges/sandbox/永不消逝的数字/)  
 
 ### Payload
 
@@ -995,12 +995,18 @@ help.__call__.__code__.co_firstlineno**exit.__init__.__code__.co_firstlineno*exi
 
 ### Explain
 
+了解到函数具有 `__code__` 属性其中具有 `co_firstlineno`,`co_flags` 等属性可以提供数字  
+`__debug__` 等调试可以提供数字  
+`int.__basicsize__` 容量相关的属性可以提供数字  
+
+利用这些数字我们去构造 `bytes_to_long(b'breakpoint')` 的值即可  
+
 ## revenge_jail
 
 ### Info
-分数 : 400 pts
-出题人 : starwalking
-题目路径 : [revenge_jail](../../challenges/sandbox/revenge_jail/)
+分数 : 400 pts  
+出题人 : starwalking  
+题目路径 : [revenge_jail](../../challenges/sandbox/revenge_jail/)  
 
 ### Payload
 
@@ -1080,9 +1086,9 @@ match dic:
 ## CatBox_revenge
 
 ### Info
-分数 : 500 pts
-出题人 : starwalking
-题目路径 : [CatBox_revenge](../../challenges/sandbox/CatBox_revenge/)
+分数 : 500 pts  
+出题人 : starwalking  
+题目路径 : [CatBox_revenge](../../challenges/sandbox/CatBox_revenge/)  
 
 ### Payload
 
@@ -1160,9 +1166,9 @@ ps : 此处稍微排版方便阅读，实际提交时无空格，无换行
 ## Undefined
 
 ### Info
-分数 : 500 pts
-出题人 : starwalking
-题目路径 : [Undefined](../../challenges/sandbox/revenge_jail/)
+分数 : 500 pts  
+出题人 : starwalking  
+题目路径 : [Undefined](../../challenges/sandbox/revenge_jail/)  
 
 ### Payload
 
@@ -1193,9 +1199,9 @@ async def f():pass
 ## density
 
 ### Info
-分数 : 500 pts
-出题人 : starwalking
-题目路径 : [density](../../challenges/sandbox/density/)
+分数 : 500 pts  
+出题人 : starwalking  
+题目路径 : [density](../../challenges/sandbox/density/)  
 
 ### Payload
 
@@ -1320,9 +1326,9 @@ __builtins__ = my_builtins
 ## registers
 
 ### Info
-分数 : 500 pts
-出题人 : starwalking
-题目路径 : [registers](../../challenges/sandbox/registers/)
+分数 : 500 pts  
+出题人 : starwalking  
+题目路径 : [registers](../../challenges/sandbox/registers/)  
 
 ### Payload
 
