@@ -2,7 +2,44 @@
 
 ### 当零来敲门
 
-详情见`README.md`
+```python
+import requests
+for i in range(500):
+    url = "http://127.0.0.1:8080/chat"
+    body = {"user":'挑战者',"msg":(i+1)}
+    x=requests.post(url, json=body)
+```
+
+```python
+import requests
+
+url = "http://127.0.0.1:8080/chat"
+
+with requests.Session() as session:
+    while True:
+        for i in range(500):
+            body = {"user": "挑战者", "msg": (i + 1)}
+            try:
+                x = session.post(url, json=body, timeout=0.5)
+                if x.json().get("status") != "success":
+                    break
+            except Exception:
+                break
+```
+
+```python
+import asyncio
+import aiohttp
+
+async def main():
+    async with aiohttp.ClientSession() as s:
+        for i in range(500):
+            async with s.post("http://127.0.0.1:8080/chat",
+                    json={"user": "挑战者", "msg": i + 1}) as resp:
+                pass
+
+asyncio.run(main())
+```
 
 ### 查分系统
 
