@@ -578,4 +578,9 @@ int main(int argc, char *argv[]) {
 }
 ```
 
-可以看到最终调用了rev，所以我们要自己写一个rev替代原有的rev用于读取flag，并劫持环境变量中的PATH变量，让其指向我们自己编译的rev可执行程序。最终即可拿到flag
+可以看到最终调用了rev，所以我们只需要将hostname当做rev使用即可，使用如下指令即可获取flag
+
+```
+hostname /f139 | hostname
+```
+
